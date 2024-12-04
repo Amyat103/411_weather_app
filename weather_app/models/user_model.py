@@ -7,18 +7,18 @@ from sqlalchemy.exc import IntegrityError
 from weather_app.db import db
 from weather_app.utils.logger import configure_logger
 
-
 logger = logging.getLogger(__name__)
 configure_logger(logger)
 
 
 class Users(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     salt = db.Column(db.String(32), nullable=False)  # 16-byte salt in hex
     password = db.Column(db.String(64), nullable=False)  # SHA-256 hash in hex
+    favorite_locations = db.Column(db.String(255), nullable=True)
 
     @classmethod
     def _generate_hashed_password(cls, password: str) -> tuple[str, str]:
@@ -145,3 +145,27 @@ class Users(db.Model):
         user.password = hashed_password
         db.session.commit()
         logger.info("Password updated successfully for user: %s", username)
+
+    @classmethod
+    def add_favorite_location(cls, username: str, location: str) -> None:
+        """
+        Add a favorite location to a user's account.
+
+        Args:
+            username (str): The username of the user.
+            location (str): The location to add.
+
+        Raises:
+            ValueError: If the user does not exist.
+        """
+        user = cls.query.filter_by(username=username).first()
+        if not user:
+            logger.info("User %s not found", username)
+            raise ValueError(f"User {username} not found")
+
+        if user.favorite_locations:
+            user.favorite_locations += f",{location}"
+        else:
+            user.favorite_locations = location
+        db.session.commit()
+        logger.info("Favorite location added successfully for user: %s", username)
