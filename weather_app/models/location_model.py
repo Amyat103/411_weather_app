@@ -178,7 +178,7 @@ class Locations(db.Model):
             raise ValueError(f"Location {location_id} not found")
 
         logger.debug("Updating location with ID %s: %s", location_id, kwargs)
-        
+
         for key, value in kwargs.items():
             if hasattr(location, key):
                 setattr(location, key, value)
@@ -188,38 +188,8 @@ class Locations(db.Model):
         db.session.commit()
         logger.info("Location with ID %s updated successfully", location_id)
 
-    @classmethod
-    def update_meal_stats(cls, meal_id: int, result: str) -> None:
-        """
-        Update meal stats (battles and wins).
 
-        Args:
-            meal_id (int): The ID of the meal.
-            result (str): 'win' or 'loss' to update the stats.
-
-        Raises:
-            ValueError: If the meal is not found, deleted, or the result is invalid.
-        """
-        meal = cls.query.filter_by(id=meal_id).first()
-        if not meal:
-            logger.info("Meal with ID %s not found", meal_id)
-            raise ValueError(f"Meal {meal_id} not found")
-        if meal.deleted:
-            logger.info("Meal with ID %s has been deleted", meal_id)
-            raise ValueError(f"Meal {meal_id} has been deleted")
-
-        if result == 'win':
-            meal.battles += 1
-            meal.wins += 1
-        elif result == 'loss':
-            meal.battles += 1
-        else:
-            raise ValueError(f"Invalid result: {result}. Expected 'win' or 'loss'.")
-
-        db.session.commit()
-        logger.info("Meal stats updated for ID %s: %s", meal_id, result)
-
-def update_cache_for_meal(mapper, connection, target):
+def update_cache_for_location(mapper, connection, target):
     """
     Update the Redis cache for a meal entry after an update or delete operation.
 
@@ -243,7 +213,7 @@ def update_cache_for_meal(mapper, connection, target):
         - If the meal is not marked as deleted, the function updates the Redis cache
           entry with the latest meal data using the `hset` command.
     """
-    cache_key = f"meal:{target.id}"
+    cache_key = f"Location:{target.id}"
     if target.deleted:
         redis_client.delete(cache_key)
     else:
@@ -253,5 +223,5 @@ def update_cache_for_meal(mapper, connection, target):
         )
 
 # Register the listener for update and delete events
-event.listen(Meals, 'after_update', update_cache_for_meal)
-event.listen(Meals, 'after_delete', update_cache_for_meal)
+event.listen(Locations, 'after_update', update_cache_for_location)
+event.listen(Locations, 'after_delete', update_cache_for_location)
