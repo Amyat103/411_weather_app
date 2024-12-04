@@ -19,13 +19,13 @@ class Meals(db.Model):
     __tablename__ = 'meals'
 
     id: int = db.Column(db.Integer, primary_key=True)
-    meal: str = db.Column(db.String(80), unique=True, nullable=False)
-    cuisine: str = db.Column(db.String(50))
-    price: float = db.Column(db.Float, nullable=False)
-    difficulty: str = db.Column(db.String(10), nullable=False)
-    battles: int = db.Column(db.Integer, default=0)
-    wins: int = db.Column(db.Integer, default=0)
-    deleted: bool = db.Column(db.Boolean, default=False)
+    location: str = db.Column(db.String(80), unique=True, nullable=False)
+    timezone: str = db.Column(db.String(50))
+    latitude: float = db.Column(db.Float, nullable=False)
+    longitude: float = db.Column(db.Float, nullable=False)
+    current_temperature: float = db.Column(db.Float, nullable=False)
+    current_wind_spend: float = db.Column(db.Float, nullable=False)
+    current_rain: float = db.Column(db.Float, nullable=False)
 
     def __post_init__(self):
         if self.price < 0:
