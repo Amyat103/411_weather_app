@@ -161,7 +161,7 @@ class Locations(db.Model):
         return cls.get_meal_by_id(meal.id, meal_name)
 
     @classmethod
-    def update_meal(cls, meal_id: int, **kwargs) -> None:
+    def update_location(cls, location_id: int, **kwargs) -> None:
         """
         Update attributes of a meal.
 
@@ -172,31 +172,15 @@ class Locations(db.Model):
         Raises:
             ValueError: If any attribute is invalid or if the meal is not found.
         """
-        meal = cls.query.filter_by(id=meal_id).first()
-        if not meal or meal.deleted is True:
-            logger.info("Meal with ID %s not found", meal_id)
-            raise ValueError(f"Meal {meal_id} not found")
+        location = cls.query.filter_by(id=location_id).first()
+        if not location or location.deleted is True:
+            logger.info("Location with ID %s not found", location_id)
+            raise ValueError(f"Location {location_id} not found")
 
-        logger.debug("Updating meal with ID %s: %s", meal_id, kwargs)
-
-        for key, value in kwargs.items():
-            if key == "meal":
-                logger.info("Cannot update meal name")
-                raise ValueError("Cannot update meal name")
-            if key == "difficulty" and value not in ['LOW', 'MED', 'HIGH']:
-                logger.info("Invalid difficulty level: %s", value)
-                raise ValueError(f"Invalid difficulty level: {value}. Must be 'LOW', 'MED', or 'HIGH'.")
-            if key == "price" and value <= 0:
-                logger.info("Invalid price: %s", value)
-                raise ValueError(f"Invalid price: {value}. Price must be a positive number.")
-            if hasattr(meal, key):
-                setattr(meal, key, value)
-            else:
-                logger.info("Invalid attribute: %s", key)
-                raise ValueError(f"Invalid attribute: {key}")
+        logger.debug("Updating location with ID %s: %s", location_id, kwargs)
 
         db.session.commit()
-        logger.info("Meal with ID %s updated successfully", meal_id)
+        logger.info("Location with ID %s updated successfully", location_id)
 
     @classmethod
     def update_meal_stats(cls, meal_id: int, result: str) -> None:
