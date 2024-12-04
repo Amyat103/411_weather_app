@@ -2,7 +2,7 @@ import time
 
 import pytest
 
-from meal_max.models.battle_model import BattleModel
+from weather_app.models.favorites_model import BattleModel
 
 
 @pytest.fixture
