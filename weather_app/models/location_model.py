@@ -25,6 +25,7 @@ class Locations(db.Model):
     current_temperature: float = db.Column(db.Float, nullable=False)
     current_wind_speed: float = db.Column(db.Float, nullable=False)
     current_rain: float = db.Column(db.Float, nullable=False)
+    deleted: bool = db.Column(db.Boolean, default=False)
 
     def __post_init__(self):
         if self.current_wind_speed < 0:
@@ -42,6 +43,7 @@ class Locations(db.Model):
             current_temperature (float): Temperature Fahrenheit
             current_wind_speed (float): Wind speed miles/hour
             current_rain (float): Precipitation, mm/h
+
 
         Raises:
             ValueError: If location is already made
@@ -63,27 +65,27 @@ class Locations(db.Model):
                 raise
 
     @classmethod
-    def delete_meal(cls, meal_id: int) -> None:
+    def delete_meal(cls, location_id: int) -> None:
         """
-        Soft delete a meal by marking it as deleted.
+        Soft delete a location by marking it as deleted.
 
         Args:
-            meal_id (int): The ID of the meal to delete.
+            location_id (int): The ID of the location to delete.
 
         Raises:
-            ValueError: If the meal with the given ID does not exist or is already deleted.
+            ValueError: If the location with the given ID does not exist or is already deleted.
         """
-        meal = cls.query.filter_by(id=meal_id).first()
-        if not meal:
-            logger.info("Meal %s not found", meal_id)
-            raise ValueError(f"Meal {meal_id} not found")
-        if meal.deleted:
-            logger.info("Meal with ID %s has already been deleted", meal_id)
-            raise ValueError(f"Meal with ID {meal_id} has been deleted")
+        location = cls.query.filter_by(id=location_id).first()
+        if not location:
+            logger.info("Meal %s not found", location_id)
+            raise ValueError(f"Meal {location_id} not found")
+        if location.deleted:
+            logger.info("Meal with ID %s has already been deleted", location_id)
+            raise ValueError(f"Meal with ID {location_id} has been deleted")
 
-        meal.deleted = True
+        location.deleted = True
         db.session.commit()
-        logger.info("Meal with ID %s marked as deleted.", meal_id)
+        logger.info("Meal with ID %s marked as deleted.", location_id)
 
     @classmethod
     def get_leaderboard(cls, sort_by: str = "wins") -> List[dict[str, Any]]:
