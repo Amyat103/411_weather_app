@@ -1,10 +1,18 @@
 import logging
-from typing import List
-from music_collection.models.song_model import Song, update_play_count
-from music_collection.utils.logger import configure_logger
+import os
+import time
+from typing import Any, List
+
+from weather_app.models.kitchen_model import Meals
+from weather_app.utils.logger import configure_logger
+from weather_app.utils.random_utils import get_random
+
 
 logger = logging.getLogger(__name__)
 configure_logger(logger)
+
+
+TTL = os.getenv("TTL", 60)  # Default TTL is 60 seconds
 
 
 class PlaylistModel:
