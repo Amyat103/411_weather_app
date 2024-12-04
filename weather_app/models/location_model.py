@@ -20,7 +20,6 @@ class Locations(db.Model):
 
     id: int = db.Column(db.Integer, primary_key=True)
     location: str = db.Column(db.String(80), unique=True, nullable=False)
-    timezone: str = db.Column(db.String(50))
     latitude: float = db.Column(db.Float, nullable=False)
     longitude: float = db.Column(db.Float, nullable=False)
     current_temperature: float = db.Column(db.Float, nullable=False)
@@ -32,9 +31,9 @@ class Locations(db.Model):
             raise ValueError("Wind speed must be a positive value.")
 
     @classmethod
-    def create_loaction(cls, location: str, timezone: str, latitude: float, current_temperature: float, current_wind_spend: float, current_rain: float) -> None:
+    def create_loaction(cls, location: str, latitude: float, longitude: float, current_temperature: float, current_wind_spend: float, current_rain: float) -> None:
         """
-        Create a new meal in the database.
+        Create a new location in the database.
 
         Args:
             meal (str): The name of the meal.
@@ -48,23 +47,17 @@ class Locations(db.Model):
             ValueError: If the price or difficulty level is invalid, or if a meal with the same name exists.
             IntegrityError: If there is a database error.
         """
-        # Validate price and difficulty
-        if price <= 0:
-            raise ValueError(f"Invalid price: {price}. Price must be a positive number.")
-        if difficulty not in ['LOW', 'MED', 'HIGH']:
-            raise ValueError(f"Invalid difficulty level: {difficulty}. Must be 'LOW', 'MED', or 'HIGH'.")
-
         # Create and commit the new meal
-        new_meal = cls(meal=meal, cuisine=cuisine, price=price, difficulty=difficulty, battles=battles, wins=wins)
+        new_location = cls(location=location, latitude=latitude, longitude=longitude, current_temperature=current_temperature, current_wind_spend=current_wind_spend, current_rain=current_rain)
         try:
-            db.session.add(new_meal)
+            db.session.add(new_location)
             db.session.commit()
-            logger.info("Meal successfully added to the database: %s", meal)
+            logger.info("Meal successfully added to the database: %s", location)
         except Exception as e:
             db.session.rollback()
             if isinstance(e, IntegrityError):
-                logger.error("Duplicate meal name: %s", meal)
-                raise ValueError(f"Meal with name '{meal}' already exists")
+                logger.error("Duplicate meal name: %s", location)
+                raise ValueError(f"Meal with name '{location}' already exists")
             else:
                 logger.error("Database error: %s", str(e))
                 raise
