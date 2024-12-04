@@ -15,8 +15,8 @@ configure_logger(logger)
 
 
 @dataclass
-class Meals(db.Model):
-    __tablename__ = 'meals'
+class Locations(db.Model):
+    __tablename__ = 'locations'
 
     id: int = db.Column(db.Integer, primary_key=True)
     location: str = db.Column(db.String(80), unique=True, nullable=False)
@@ -28,10 +28,8 @@ class Meals(db.Model):
     current_rain: float = db.Column(db.Float, nullable=False)
 
     def __post_init__(self):
-        if self.price < 0:
-            raise ValueError("Price must be a positive value.")
-        if self.difficulty not in ['LOW', 'MED', 'HIGH']:
-            raise ValueError("Difficulty must be 'LOW', 'MED', or 'HIGH'.")
+        if self.current_wind_spend < 0:
+            raise ValueError("Wind speed must be a positive value.")
 
     @classmethod
     def create_meal(cls, meal: str, cuisine: str, price: float, difficulty: str, battles: int = 0, wins: int = 0) -> None:
