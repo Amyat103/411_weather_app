@@ -88,83 +88,41 @@ class Locations(db.Model):
         logger.info("Meal with ID %s marked as deleted.", location_id)
 
     @classmethod
-    def get_leaderboard(cls, sort_by: str = "wins") -> List[dict[str, Any]]:
+    def get_location_by_id(cls, location_id: int, location: str = None) -> dict[str, Any]:
         """
-        Retrieve the leaderboard of meals based on wins or win percentage.
+        Retrieve a location by its ID.
 
         Args:
-            sort_by (str, optional): Specifies the sorting method for the leaderboard.
-                                     Options are 'wins' (default) or 'win_pct'.
+            location_id (int): The ID of the location.
+            location (str, optional): The name of the location, if available.
 
         Returns:
-            List[dict]: A list of meals with stats for leaderboard display.
+            dict: The location data as a dictionary.
 
         Raises:
-            ValueError: If an invalid sort_by parameter is provided.
+            ValueError: If the location does not exist or is deleted.
         """
-        if sort_by not in ["wins", "win_pct"]:
-            logger.error("Invalid sort_by parameter: %s", sort_by)
-            raise ValueError(f"Invalid sort_by parameter: {sort_by}")
-
-        query = cls.query.filter_by(deleted=False).filter(cls.battles > 0)
-        if sort_by == "win_pct":
-            query = query.order_by((cls.wins * 1.0 / cls.battles).desc())
-        elif sort_by == "wins":
-            query = query.order_by(cls.wins.desc())
-
-        leaderboard = [
-            {
-                'id': meal.id,
-                'meal': meal.meal,
-                'cuisine': meal.cuisine,
-                'price': meal.price,
-                'difficulty': meal.difficulty,
-                'battles': meal.battles,
-                'wins': meal.wins,
-                'win_pct': round((meal.wins / meal.battles) * 100, 1) if meal.battles > 0 else 0
-            }
-            for meal in query.all()
-        ]
-        logger.info("Leaderboard retrieved successfully")
-        return leaderboard
-
-    @classmethod
-    def get_meal_by_id(cls, meal_id: int, meal_name: str = None) -> dict[str, Any]:
-        """
-        Retrieve a meal by its ID.
-
-        Args:
-            meal_id (int): The ID of the meal.
-            meal_name (str, optional): The name of the meal, if available.
-
-        Returns:
-            dict: The meal data as a dictionary.
-
-        Raises:
-            ValueError: If the meal does not exist or is deleted.
-        """
-        logger.info("Retrieving meal by ID: %s", meal_id)
-        cache_key = f"meal_{meal_id}"
-        cached_meal = redis_client.hgetall(cache_key)
-        if cached_meal:
-            logger.info("Meal retrieved from cache: %s", meal_id)
-            meal_data = {k.decode(): v.decode() for k, v in cached_meal.items()}
-            meal_data["price"] = float(meal_data["price"])
+        logger.info("Retrieving location by ID: %s", location_id)
+        cache_key = f"location_{location_id}" #look at??????
+        cached_location = redis_client.hgetall(cache_key)
+        if cached_location:
+            logger.info("Location retrieved from cache: %s", location_id)
+            location_data = {k.decode(): v.decode() for k, v in cached_location.items()}
             # meal_data['deleted'] is a string. We need to convert it to a bool
-            meal_data['deleted'] = meal_data.get('deleted', 'false').lower() == 'true'
-            if meal_data['deleted']:
-                logger.info("Meal with %s %s not found", "name" if meal_name else "ID", meal_name or meal_id)
-                raise ValueError(f"Meal {meal_name or meal_id} not found")
-            return meal_data
-        meal = cls.query.filter_by(id=meal_id).first()
-        if not meal or meal.deleted:
-            logger.info("Meal with %s %s not found", "name" if meal_name else "ID", meal_name or meal_id)
-            raise ValueError(f"Meal {meal_name or meal_id} not found")
+            location_data['deleted'] = location_data.get('deleted', 'false').lower() == 'true'
+            if location_data['deleted']:
+                logger.info("Location with %s %s not found", "name" if location else "ID", location or location_id)
+                raise ValueError(f"Location {location or location_id} not found")
+            return location_data
+        Locations = cls.query.filter_by(id=location_id).first()
+        if not Locations or location.deleted:
+            logger.info("Location with %s %s not found", "name" if location else "ID", location or location_id)
+            raise ValueError(f"Location {location or location_id} not found")
         # Convert the meal object to a dictionary and cache it
-        logger.info("Meal retrieved from database and cached: %s", meal_id)
-        meal_dict = asdict(meal)
-        redis_client.hset(cache_key, mapping={k: str(v) for k, v in meal_dict.items()})
-        return meal_dict
+        logger.info("Location retrieved from database and cached: %s", location_id)
+        location_dict = asdict(Locations)
+        redis_client.hset(cache_key, mapping={k: str(v) for k, v in location_dict.items()})
+        return location_dict
 
     @classmethod
     def get_meal_by_name(cls, meal_name: str) -> dict[str, Any]:
