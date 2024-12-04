@@ -178,7 +178,13 @@ class Locations(db.Model):
             raise ValueError(f"Location {location_id} not found")
 
         logger.debug("Updating location with ID %s: %s", location_id, kwargs)
-
+        
+        for key, value in kwargs.items():
+            if hasattr(location, key):
+                setattr(location, key, value)
+            else:
+                logger.info("Invalid attribute: %s", key)
+                raise ValueError(f"Invalid attribute: {key}")
         db.session.commit()
         logger.info("Location with ID %s updated successfully", location_id)
 
