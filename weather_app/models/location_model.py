@@ -23,41 +23,41 @@ class Locations(db.Model):
     latitude: float = db.Column(db.Float, nullable=False)
     longitude: float = db.Column(db.Float, nullable=False)
     current_temperature: float = db.Column(db.Float, nullable=False)
-    current_wind_spend: float = db.Column(db.Float, nullable=False)
+    current_wind_speed: float = db.Column(db.Float, nullable=False)
     current_rain: float = db.Column(db.Float, nullable=False)
 
     def __post_init__(self):
-        if self.current_wind_spend < 0:
+        if self.current_wind_speed < 0:
             raise ValueError("Wind speed must be a positive value.")
 
     @classmethod
-    def create_loaction(cls, location: str, latitude: float, longitude: float, current_temperature: float, current_wind_spend: float, current_rain: float) -> None:
+    def create_location(cls, location: str, latitude: float, longitude: float, current_temperature: float, current_wind_speed: float, current_rain: float) -> None:
         """
         Create a new location in the database.
 
         Args:
-            meal (str): The name of the meal.
-            cuisine (str): The type of cuisine (e.g., 'Italian', 'Mexican').
-            price (float): The price of the meal. Must be a positive number.
-            difficulty (str): The difficulty level of preparing the meal ('LOW', 'MED', 'HIGH').
-            battles (int, optional): Initial number of battles for the meal. Defaults to 0.
-            wins (int, optional): Initial number of wins for the meal. Defaults to 0.
+            location (str): The name of the location.
+            latitude (float): Latitude of the location, decimal (−90; 90)
+            longitude (float): Longitude of the location, decimal (-180; 180)
+            current_temperature (float): Temperature Fahrenheit
+            current_wind_speed (float): Wind speed miles/hour
+            current_rain (float): Precipitation, mm/h
 
         Raises:
-            ValueError: If the price or difficulty level is invalid, or if a meal with the same name exists.
+            ValueError: If location is already made
             IntegrityError: If there is a database error.
         """
         # Create and commit the new meal
-        new_location = cls(location=location, latitude=latitude, longitude=longitude, current_temperature=current_temperature, current_wind_spend=current_wind_spend, current_rain=current_rain)
+        new_location = cls(location=location, latitude=latitude, longitude=longitude, current_temperature=current_temperature, current_wind_speed=current_wind_speed, current_rain=current_rain)
         try:
             db.session.add(new_location)
             db.session.commit()
-            logger.info("Meal successfully added to the database: %s", location)
+            logger.info("Location successfully added to the database: %s", location)
         except Exception as e:
             db.session.rollback()
             if isinstance(e, IntegrityError):
-                logger.error("Duplicate meal name: %s", location)
-                raise ValueError(f"Meal with name '{location}' already exists")
+                logger.error("Duplicate location name: %s", location)
+                raise ValueError(f"Location with name '{location}' already exists")
             else:
                 logger.error("Database error: %s", str(e))
                 raise
