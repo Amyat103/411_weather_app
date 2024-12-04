@@ -15,7 +15,7 @@ configure_logger(logger)
 TTL = os.getenv("TTL", 60)  # Default TTL is 60 seconds
 
 
-class PlaylistModel:
+class FavoritesModel:
     """
     A class to manage a playlist of songs.
 
