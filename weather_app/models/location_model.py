@@ -32,7 +32,7 @@ class Locations(db.Model):
             raise ValueError("Wind speed must be a positive value.")
 
     @classmethod
-    def create_meal(cls, meal: str, cuisine: str, price: float, difficulty: str, battles: int = 0, wins: int = 0) -> None:
+    def create_loaction(cls, location: str, timezone: str, latitude: float, current_temperature: float, current_wind_spend: float, current_rain: float) -> None:
         """
         Create a new meal in the database.
 
