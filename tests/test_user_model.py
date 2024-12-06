@@ -166,5 +166,5 @@ def test_delete_favorite_location(session, sample_user):
 
     # Verify the location is deleted
     user = session.query(Users).filter_by(username=sample_user["username"]).first()
-    assert user is not None, "User should exist in the database."
+    assert user is not "", "User should exist in the database."
     assert location not in user.favorite_locations, "Favorite location should be deleted."

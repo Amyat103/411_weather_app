@@ -18,7 +18,7 @@ class Users(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     salt = db.Column(db.String(32), nullable=False)  # 16-byte salt in hex
     password = db.Column(db.String(64), nullable=False)  # SHA-256 hash in hex
-    favorite_locations = db.Column(db.String(255), nullable=False, default=[])
+    favorite_locations = db.Column(db.String(255), nullable=False, default="")
 
     @classmethod
     def _generate_hashed_password(cls, password: str) -> tuple[str, str]:
@@ -163,16 +163,20 @@ class Users(db.Model):
             logger.info("User %s not found", username)
             raise ValueError(f"User {username} not found")
 
-        if user.favorite_locations is None:
+        if user.favorite_locations is "":
             user.favorite_locations = location
         else:
-            locations = user.favorite_locations.split(",")
-            if location not in locations:
-                user.favorite_locations = user.favorite_locations + "," + location
-                db.session.commit()
-                logger.info(
-                    "Favorite location added successfully for user: %s", username
-                )
+            if user.favorite_locations == "":
+                user.favorite_locations = location
+            else:
+                locations = user.favorite_locations.split(",")
+        
+                if location not in locations:
+                    user.favorite_locations = user.favorite_locations + "," + location
+                    db.session.commit()
+                    logger.info(
+                        "Favorite location added successfully for user: %s", username
+                    )
 
     @classmethod
     def remove_favorite_location(cls, username: str, location: str) -> None:
@@ -205,7 +209,7 @@ class Users(db.Model):
             )
 
         locations.remove(location)
-        user.favorite_locations = ",".join(locations) if locations else None
+        user.favorite_locations = ",".join(locations) if locations else ""
         db.session.commit()
         logger.info("Favorite location removed successfully for user: %s", username)
 
