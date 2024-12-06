@@ -76,7 +76,7 @@ def test_get_location_by_id_cache_hit(session, mock_redis_client):
         "longitude".encode(): "71.0589".encode(),
         "current_temperature".encode(): "34".encode(),
         "current_wind_speed".encode(): "15".encode(),
-        "current_rain".encode(): "0".encode(),
+        "current_rain".encode(): "0.0".encode(),
         "deleted".encode(): "False".encode(),
     }
 
@@ -109,9 +109,9 @@ def test_get_location_by_id_cache_miss(session, mock_redis_client):
             "location": "Boston",
             "latitude": "42.3601",
             "longitude": "71.0589",
-            "current_temperature": "34",
-            "current_wind_speed": "15",
-            "current_rain": "0",
+            "current_temperature": "34.0",
+            "current_wind_speed": "15.0",
+            "current_rain": "0.0",
             "deleted": "False",
         }
     )
@@ -123,7 +123,7 @@ def test_get_location_by_id_bad_id(session, mock_redis_client):
     # Ensure the Redis client returns an empty dict to simulate a cache miss
     mock_redis_client.hgetall.return_value = {}
 
-    with pytest.raises(ValueError, match="Meal 999 not found"):
+    with pytest.raises(ValueError, match="Location 999 not found"):
         Locations.get_location_by_id(999)
 
 def test_get_location_by_id_deleted(session, mock_redis_client):
@@ -137,7 +137,7 @@ def test_get_location_by_id_deleted(session, mock_redis_client):
         "longitude".encode(): "71.0589".encode(),
         "current_temperature".encode(): "34".encode(),
         "current_wind_speed".encode(): "15".encode(),
-        "current_rain".encode(): "0".encode(),
+        "current_rain".encode(): "0.0".encode(),
         "deleted".encode(): "True".encode(),  # Simulate the meal being marked as deleted
     }
 
@@ -189,7 +189,7 @@ def test_get_location_by_name_deleted(session, mock_redis_client):
         "longitude".encode(): "71.0589".encode(),
         "current_temperature".encode(): "34".encode(),
         "current_wind_speed".encode(): "15".encode(),
-        "current_rain".encode(): "0".encode(),
+        "current_rain".encode(): "0.0".encode(),
         "deleted".encode(): "True".encode()
     }
 
@@ -236,7 +236,7 @@ def test_update_location_triggers_cache_update(session, mock_redis_client):
             b"longitude": b"71.0589",
             b"current_temperature": b"20",
             b"current_wind_speed": b"10",
-            b"current_rain": b"0",
+            b"current_rain": b"0.0",
             b"deleted": b"False",
         }
     )

@@ -78,7 +78,7 @@ class Locations(db.Model):
         location = cls.query.filter_by(id=location_id).first()
         if not location:
             logger.info("Location %s not found", location_id)
-            raise ValueError(f"Meal {location_id} not found")
+            raise ValueError(f"Location {location_id} not found")
         if location.deleted:
             logger.info("Location with ID %s has already been deleted", location_id)
             raise ValueError(f"Location with ID {location_id} has been deleted")
@@ -115,7 +115,7 @@ class Locations(db.Model):
                 raise ValueError(f"Location {location or location_id} not found")
             return location_data
         Locations = cls.query.filter_by(id=location_id).first()
-        if not Locations or location.deleted:
+        if not Locations or Locations.deleted:
             logger.info("Location with %s %s not found", "name" if location else "ID", location or location_id)
             raise ValueError(f"Location {location or location_id} not found")
         # Convert the meal object to a dictionary and cache it
@@ -213,7 +213,7 @@ def update_cache_for_location(mapper, connection, target):
         - If the meal is not marked as deleted, the function updates the Redis cache
           entry with the latest meal data using the `hset` command.
     """
-    cache_key = f"Location:{target.id}"
+    cache_key = f"location:{target.id}"
     if target.deleted:
         redis_client.delete(cache_key)
     else:
