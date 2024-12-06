@@ -65,7 +65,7 @@ class Locations(db.Model):
                 raise
 
     @classmethod
-    def delete_meal(cls, location_id: int) -> None:
+    def delete_location(cls, location_id: int) -> None:
         """
         Soft delete a location by marking it as deleted.
 
@@ -77,15 +77,15 @@ class Locations(db.Model):
         """
         location = cls.query.filter_by(id=location_id).first()
         if not location:
-            logger.info("Meal %s not found", location_id)
+            logger.info("Location %s not found", location_id)
             raise ValueError(f"Meal {location_id} not found")
         if location.deleted:
-            logger.info("Meal with ID %s has already been deleted", location_id)
-            raise ValueError(f"Meal with ID {location_id} has been deleted")
+            logger.info("Location with ID %s has already been deleted", location_id)
+            raise ValueError(f"Location with ID {location_id} has been deleted")
 
         location.deleted = True
         db.session.commit()
-        logger.info("Meal with ID %s marked as deleted.", location_id)
+        logger.info("Location with ID %s marked as deleted.", location_id)
 
     @classmethod
     def get_location_by_id(cls, location_id: int, location: str = None) -> dict[str, Any]:
@@ -163,14 +163,14 @@ class Locations(db.Model):
     @classmethod
     def update_location(cls, location_id: int, **kwargs) -> None:
         """
-        Update attributes of a meal.
+        Update attributes of a location.
 
         Args:
-            meal_id (int): The ID of the meal to update.
-            kwargs: Key-value pairs of attributes to update (excluding 'meal').
+            location_id (int): The ID of the location to update.
+            kwargs: Key-value pairs of attributes to update (excluding 'location').
 
         Raises:
-            ValueError: If any attribute is invalid or if the meal is not found.
+            ValueError: If any attribute is invalid or if the location is not found.
         """
         location = cls.query.filter_by(id=location_id).first()
         if not location or location.deleted is True:
