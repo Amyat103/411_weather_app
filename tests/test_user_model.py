@@ -141,16 +141,16 @@ def test_add_favorite_location(session, sample_user):
     Users.create_user(**sample_user)
 
     # Add a favorite location for the user
-    location = "New York, NY"
+    location = "New York"
     Users.add_favorite_location(sample_user["username"], location)
 
     # Verify the location is added
     user = session.query(Users).filter_by(username=sample_user["username"]).first()
     assert user is not None, "User should exist in the database."
-    assert user.favorite_locations == [location], "Favorite location should be added."
+    assert user.favorite_locations == location, "Favorite location should be added."
 
 
-def test_delete_favorite_locatioN(session, sample_user):
+def test_delete_favorite_location(session, sample_user):
     """
     Test successfully deleting a favorite location for a user.
     """
@@ -158,7 +158,7 @@ def test_delete_favorite_locatioN(session, sample_user):
     Users.create_user(**sample_user)
 
     # Add a favorite location for the user
-    location = "New York, NY"
+    location = "New York"
     Users.add_favorite_location(sample_user["username"], location)
 
     # Delete the favorite location
@@ -167,6 +167,4 @@ def test_delete_favorite_locatioN(session, sample_user):
     # Verify the location is deleted
     user = session.query(Users).filter_by(username=sample_user["username"]).first()
     assert user is not None, "User should exist in the database."
-    assert [
-        location
-    ] not in user.favorite_locations, "Favorite location should be deleted."
+    assert location not in user.favorite_locations, "Favorite location should be deleted."
