@@ -199,3 +199,23 @@ class Users(db.Model):
         user.favorite_locations.remove(location)
         db.session.commit()
         logger.info("Favorite location removed successfully for user: %s", username)
+
+    @classmethod
+    def get_favorite_locations(cls, username: str) -> list[str]:
+        """
+        Retrieve the favorite locations for a user.
+
+        Args:
+            username (str): The username of the user.
+
+        Returns:
+            list: The list of favorite locations.
+
+        Raises:
+            ValueError: If the user does not exist.
+        """
+        user = cls.query.filter_by(username=username).first()
+        if not user:
+            logger.info("User %s not found", username)
+            raise ValueError(f"User {username} not found")
+        return user.favorite_locations
