@@ -211,72 +211,54 @@ def test_update_location(session, mock_redis_client):
     """Test updating a location's details."""
     Locations.create_location("Boston", 42.3601, 71.0589, 34, 15, 0)
     location = Locations.query.one()
-    Locations.update_location(location.id, cuisine="Italian", price=15.0, difficulty="HIGH")
+    Locations.update_location(location.id, current_temperature=28, current_wind_speed=14, current_rain=2)
     updated_location = Locations.query.one()
-    assert updated_location.cuisine == "Italian"
-    assert updated_location.price == 15.0
-    assert updated_location.difficulty == "HIGH"
+    assert updated_location.current_temperature == 28
+    assert updated_location.current_wind_speed == 14
+    assert updated_location.current_rain == 2
 
-def test_update_meal_triggers_cache_update(session, mock_redis_client):
-    """Test that updating a meal triggers a cache update in Redis."""
-    # Create and add a meal
+def test_update_location_triggers_cache_update(session, mock_redis_client):
+    """Test that updating a location triggers a cache update in Redis."""
+    # Create and add a location
     Locations.create_location("Boston", 42.3601, 71.0589, 34, 15, 0)
-    meal = session.get(Meals, 1)
+    location = session.get(Locations, 1)
 
-    # Update the meal
-    Meals.update_meal(meal.id, cuisine="Mexican", price=15.0)
+    # Update the location
+    Locations.update_location(location.id, current_temperature=20, current_wind_speed=10)
 
     # Check that the Redis cache was updated with the new values
     mock_redis_client.hset.assert_called_once_with(
-        f"meal:{meal.id}",
+        f"location:{location.id}",
         mapping={
             b"id": b"1",
-            b"meal": b"Spaghetti",
-            b"cuisine": b"Mexican",
-            b"price": b"15.0",
-            b"difficulty": b"MED",
-            b"battles": b"0",
-            b"wins": b"0",
+            b"location": b"Boston",
+            b"latitude": b"42.3601",
+            b"longitude": b"71.0589",
+            b"current_temperature": b"20",
+            b"current_wind_speed": b"10",
+            b"current_rain": b"0",
             b"deleted": b"False",
         }
     )
 
-def test_update_meal_deleted(session, mock_redis_client):
-    """Test updating a deleted meal."""
+def test_update_location_deleted(session, mock_redis_client):
+    """Test updating a deleted location."""
     Locations.create_location("Boston", 42.3601, 71.0589, 34, 15, 0)
-    meal = Meals.query.one()
-    Meals.delete_meal(meal.id)
-    with pytest.raises(ValueError, match="Meal 1 not found"):
-        Meals.update_meal(meal.id, cuisine="Italian", price=15.0, difficulty="HIGH")
+    location = Locations.query.one()
+    Locations.delete_location(location.id)
+    with pytest.raises(ValueError, match="Location 1 not found"):
+        Locations.update_location(location.id, current_temperature=28, current_wind_speed=14, current_rain=2)
 
-def test_update_meal_update_name(session):
-    """Test updating a meal's name."""
-    Locations.create_location("Boston", 42.3601, 71.0589, 34, 15, 0)
-    meal = Meals.query.one()
-    with pytest.raises(ValueError, match="Cannot update meal name"):
-        Meals.update_meal(meal.id, meal="Lasagna", cuisine="Italian", price=15.0, difficulty="HIGH")
+# def test_update_location_update_name(session):
+#     """Test updating a meal's name."""
+#     Locations.create_location("Boston", 42.3601, 71.0589, 34, 15, 0)
+#     meal = Meals.query.one()
+#     with pytest.raises(ValueError, match="Cannot update meal name"):
+#         Meals.update_meal(meal.id, meal="Lasagna", cuisine="Italian", price=15.0, difficulty="HIGH")
 
-def test_update_meal_bad_id(session):
-    """Test updating a meal with an invalid ID."""
-    with pytest.raises(ValueError, match="Meal 999 not found"):
-        Meals.update_meal(999, cuisine="Italian", price=15.0, difficulty="HIGH")
+def test_update_location_bad_id(session):
+    """Test updating a location with an invalid ID."""
+    with pytest.raises(ValueError, match="Location 999 not found"):
+        Locations.update_location(999, current_temperature=28, current_wind_speed=14, current_rain=2)
 
-def test_update_meal_bad_difficulty(session):
-    """Test updating a meal with an invalid difficulty level."""
-    Locations.create_location("Boston", 42.3601, 71.0589, 34, 15, 0)
-    meal = Meals.query.one()
-    with pytest.raises(ValueError, match="Invalid difficulty level: VERY_HARD. Must be 'LOW', 'MED', or 'HIGH'."):
-        Meals.update_meal(meal.id, cuisine="Italian", price=15.0, difficulty="VERY_HARD")
-
-def test_update_meal_bad_price(session):
-    """Test updating a meal with an invalid price (negative or zero)."""
-    Locations.create_location("Boston", 42.3601, 71.0589, 34, 15, 0)
-    meal = Meals.query.one()
-    with pytest.raises(ValueError, match="Invalid price: -15.0. Price must be a positive number."):
-        Meals.update_meal(meal.id, cuisine="Italian", price=-15.0, difficulty="HIGH")
-
-    session.rollback()
-
-    with pytest.raises(ValueError, match="Invalid price: 0. Price must be a positive number."):
-        Meals.update_meal(meal.id, cuisine="Italian", price=0, difficulty="HIGH")
 
