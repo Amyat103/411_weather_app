@@ -167,7 +167,7 @@ class Locations(db.Model):
 
         Args:
             location_id (int): The ID of the location to update.
-            kwargs: Key-value pairs of attributes to update (excluding 'location').
+            kwargs: Key-value pairs of attributes to update (excluding 'location', 'latitude' and 'longitude').
 
         Raises:
             ValueError: If any attribute is invalid or if the location is not found.
