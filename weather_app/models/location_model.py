@@ -125,40 +125,40 @@ class Locations(db.Model):
         return location_dict
 
     @classmethod
-    def get_meal_by_name(cls, meal_name: str) -> dict[str, Any]:
+    def get_location_by_name(cls, location_name: str) -> dict[str, Any]:
         """
-        Retrieve a meal by its name, using a cached association between name and ID.
+        Retrieve a location by its name, using a cached association between name and ID.
 
         Args:
-            meal_name (str): The name of the meal.
+            location_name (str): The name of the location.
 
         Returns:
-            dict: The meal data as a dictionary.
+            dict: The location data as a dictionary.
 
         Raises:
-            ValueError: If the meal does not exist or is deleted.
+            ValueError: If the location does not exist or is deleted.
         """
-        logger.info("Retrieving meal by name: %s", meal_name)
-        cache_key = f"meal_name:{meal_name}"
+        logger.info("Retrieving location by name: %s", location_name)
+        cache_key = f"location_name:{location_name}"
 
         # Check if name-to-ID association is cached
-        meal_id = redis_client.get(cache_key)
-        if meal_id:
-            logger.info("Meal ID %s retrieved from cache for name: %s", meal_id.decode(), meal_name)
-            # Use get_meal_by_id to retrieve the full meal data from ID
-            return cls.get_meal_by_id(int(meal_id.decode()), meal_name)
+        location_id = redis_client.get(cache_key)
+        if location_id:
+            logger.info("Location ID %s retrieved from cache for name: %s", location_id.decode(), location_name)
+            # Use get_location_by_id to retrieve the full location data from ID
+            return cls.get_location_by_id(int(location_id.decode()), location_name)
 
         # Fallback to database if cache miss
-        meal = cls.query.filter_by(meal=meal_name).first()
-        if not meal or meal.deleted:
-            logger.info("Meal with name %s not found", meal_name)
-            raise ValueError(f"Meal {meal_name} not found")
+        location = cls.query.filter_by(location=location_name).first()
+        if not location or location.deleted:
+            logger.info("Location with name %s not found", location_name)
+            raise ValueError(f"Location {location_name} not found")
 
-        # Cache the name-to-ID association and retrieve the full meal data
-        # TODO: This should happen when a meal is created, not here
-        logger.info("Caching meal ID %s for name: %s", meal.id, meal_name)
-        redis_client.set(cache_key, str(meal.id))
-        return cls.get_meal_by_id(meal.id, meal_name)
+        # Cache the name-to-ID association and retrieve the full location data
+        # TODO: This should happen when a location is created, not here
+        logger.info("Caching location ID %s for name: %s", location.id, location_name)
+        redis_client.set(cache_key, str(location.id))
+        return cls.get_location_by_id(location.id, location_name)
 
     @classmethod
     def update_location(cls, location_id: int, **kwargs) -> None:
