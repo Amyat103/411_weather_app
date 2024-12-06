@@ -5,8 +5,8 @@ from werkzeug.exceptions import BadRequest, Unauthorized
 
 from config import ProductionConfig
 from weather_app.db import db
-from weather_app.models.favorites_model import BattleModel
-from weather_app.models.location_model import Meals
+from weather_app.models.favorites_model import FavoritesModel
+from weather_app.models.location_model import Locations
 from weather_app.models.mongo_session_model import login_user, logout_user
 from weather_app.models.user_model import Users
 
@@ -21,7 +21,7 @@ def create_app(config_class=ProductionConfig):
     with app.app_context():
         db.create_all()  # Recreate all tables
 
-    battle_model = BattleModel()
+    favorites_model = FavoritesModel()
 
     ####################################################
     #
@@ -154,7 +154,7 @@ def create_app(config_class=ProductionConfig):
             user_id = Users.get_id_by_username(username)
 
             # Load user's combatants into the battle model
-            login_user(user_id, battle_model)
+            login_user(user_id, favorites_model)
 
             app.logger.info("User %s logged in successfully.", username)
             return jsonify({"message": f"User {username} logged in successfully."}), 200
@@ -193,7 +193,7 @@ def create_app(config_class=ProductionConfig):
             user_id = Users.get_id_by_username(username)
 
             # Save user's combatants and clear the battle model
-            logout_user(user_id, battle_model)
+            logout_user(user_id, favorites_model)
 
             app.logger.info("User %s logged out successfully.", username)
             return jsonify({"message": f"User {username} logged out successfully."}), 200
@@ -208,124 +208,124 @@ def create_app(config_class=ProductionConfig):
 
     ##########################################################
     #
-    # Meals
+    # Locations
     #
     ##########################################################
 
 
-    @app.route('/api/create-meal', methods=['POST'])
-    def add_meal() -> Response:
+    @app.route('/api/create-location', methods=['POST'])
+    def add_location() -> Response:
         """
-        Route to add a new meal to the database.
+        Route to add a new location to the database.
 
         Expected JSON Input:
-            - meal (str): The name of the combatant (meal).
-            - cuisine (str): The cuisine type of the combatant (e.g., Italian, Chinese).
-            - price (float): The price of the combatant.
-            - difficulty (str): The preparation difficulty (HIGH, MED, LOW).
+            - location (str): Name of location.
+            - latitude (float): Latitude of the location, decimal (−90; 90)
+            - longitude (float): Longitude of the location, decimal (-180; 180)
 
         Returns:
-            JSON response indicating the success of the combatant addition.
+            JSON response indicating the success of the location addition.
         Raises:
             400 error if input validation fails.
-            500 error if there is an issue adding the combatant to the database.
+            500 error if there is an issue adding the location to the database.
         """
-        app.logger.info('Creating new meal')
+        app.logger.info('Creating new location')
         try:
-            # Get the JSON data from the request
-            data = request.get_json()
+            # Get the API data from the request
+            data1 = request.get_json()
+            lat = data1.get('latitude')
+            lon = data1.get('longitude')
+
+            # Get data from OpenWeatherMap API
+            api_key = ''
+            url = f'https://api.openweathermap.org/data/3.0/onecall?lat={lat}lon={lon}&appid={api_key}'
+            data = request.get(url)
 
             # Extract and validate required fields
-            meal = data.get('meal')
-            cuisine = data.get('cuisine')
-            price = data.get('price')
-            difficulty = data.get('difficulty')
+            location = lon = data1.get('location')
+            latitude = lat
+            longitude = lon
+            current_temperature = data['current']['temp']
+            current_wind_speed = data['current']['wind_speed']
+            current_rain = data['daily']['rain']
 
-            if not meal or not cuisine or price is None or difficulty not in ['HIGH', 'MED', 'LOW']:
+            if not location or not latitude or not longitude or not current_temperature or not current_wind_speed or not current_rain:
                 raise BadRequest("Invalid input. All fields are required with valid values.")
 
-            # Check that price is a float and has at most two decimal places
-            try:
-                price = float(price)
-                if round(price, 2) != price:
-                    raise ValueError("Price has more than two decimal places")
-            except ValueError as e:
-                return make_response(jsonify({'error': 'Price must be a valid float with at most two decimal places'}), 400)
+            # Call the Locations function to add the location to the database
+            app.logger.info('Adding location: %s, %f, %f, %f, %f, %f', location, latitude, longitude, current_temperature, current_wind_speed, current_rain)
+            Locations.create_location(location, latitude, longitude, current_temperature, current_wind_speed, current_rain)
 
-            # Call the Meals function to add the combatant to the database
-            app.logger.info('Adding meal: %s, %s, %.2f, %s', meal, cuisine, price, difficulty)
-            Meals.create_meal(meal, cuisine, price, difficulty)
-
-            app.logger.info("Combatant added: %s", meal)
-            return make_response(jsonify({'status': 'combatant added', 'combatant': meal}), 201)
+            app.logger.info("Location added: %s", location)
+            return make_response(jsonify({'status': 'location added', 'location': location}), 201)
         except Exception as e:
-            app.logger.error("Failed to add combatant: %s", str(e))
+            app.logger.error("Failed to add location: %s", str(e))
             return make_response(jsonify({'error': str(e)}), 500)
 
 
-    @app.route('/api/delete-meal/<int:meal_id>', methods=['DELETE'])
-    def delete_meal(meal_id: int) -> Response:
+    @app.route('/api/delete-location/<int:location_id>', methods=['DELETE'])
+    def delete_location(location_id: int) -> Response:
         """
-        Route to delete a meal by its ID. This performs a soft delete by marking it as deleted.
+        Route to delete a location by its ID. This performs a soft delete by marking it as deleted.
 
         Path Parameter:
-            - meal_id (int): The ID of the meal to delete.
+            - location_id (int): The ID of the location to delete.
 
         Returns:
             JSON response indicating success of the operation or error message.
         """
         try:
-            app.logger.info(f"Deleting meal by ID: {meal_id}")
+            app.logger.info(f"Deleting location by ID: {location_id}")
 
-            Meals.delete_meal(meal_id)
-            return make_response(jsonify({'status': 'meal deleted'}), 200)
+            Locations.delete_location(location_id)
+            return make_response(jsonify({'status': 'location deleted'}), 200)
         except Exception as e:
-            app.logger.error(f"Error deleting meal: {e}")
+            app.logger.error(f"Error deleting location: {e}")
             return make_response(jsonify({'error': str(e)}), 500)
 
 
-    @app.route('/api/get-meal-by-id/<int:meal_id>', methods=['GET'])
-    def get_meal_by_id(meal_id: int) -> Response:
+    @app.route('/api/get-location-by-id/<int:location_id>', methods=['GET'])
+    def get_location_by_id(location_id: int) -> Response:
         """
-        Route to get a meal by its ID.
+        Route to get a location by its ID.
 
         Path Parameter:
-            - meal_id (int): The ID of the meal.
+            - location_id (int): The ID of the location.
 
         Returns:
-            JSON response with the meal details or error message.
+            JSON response with the location details or error message.
         """
         try:
-            app.logger.info(f"Retrieving meal by ID: {meal_id}")
+            app.logger.info(f"Retrieving location by ID: {location_id}")
 
-            meal = Meals.get_meal_by_id(meal_id)
-            return make_response(jsonify({'status': 'success', 'meal': meal}), 200)
+            location = Locations.get_location_by_id(location_id)
+            return make_response(jsonify({'status': 'success', 'location': location}), 200)
         except Exception as e:
-            app.logger.error(f"Error retrieving meal by ID: {e}")
+            app.logger.error(f"Error retrieving location by ID: {e}")
             return make_response(jsonify({'error': str(e)}), 500)
 
 
-    @app.route('/api/get-meal-by-name/<string:meal_name>', methods=['GET'])
-    def get_meal_by_name(meal_name: str) -> Response:
+    @app.route('/api/get-location-by-name/<string:location_name>', methods=['GET'])
+    def get_location_by_name(location_name: str) -> Response:
         """
-        Route to get a meal by its name.
+        Route to get a location by its name.
 
         Path Parameter:
-            - meal_name (str): The name of the meal.
+            - location_name (str): The name of the location.
 
         Returns:
-            JSON response with the meal details or error message.
+            JSON response with the location details or error message.
         """
         try:
-            app.logger.info(f"Retrieving meal by name: {meal_name}")
+            app.logger.info(f"Retrieving location by name: {location_name}")
 
-            if not meal_name:
-                return make_response(jsonify({'error': 'Meal name is required'}), 400)
+            if not location_name:
+                return make_response(jsonify({'error': 'Location name is required'}), 400)
 
-            meal = Meals.get_meal_by_name(meal_name)
-            return make_response(jsonify({'status': 'success', 'meal': meal}), 200)
+            location = Locations.get_location_by_name(location_name)
+            return make_response(jsonify({'status': 'success', 'location': location}), 200)
         except Exception as e:
-            app.logger.error(f"Error retrieving meal by name: {e}")
+            app.logger.error(f"Error retrieving location by name: {e}")
             return make_response(jsonify({'error': str(e)}), 500)
 
 
@@ -355,55 +355,38 @@ def create_app(config_class=ProductionConfig):
         except Exception as e:
             app.logger.error("Failed to initialize database: %s", str(e))
             return jsonify({"status": "error", "message": "Failed to initialize database."}), 500
+        
+    # update_location
+
+    # update_cache_for_location
 
     ############################################################
     #
-    # Battle
+    # Favorites
     #
     ############################################################
 
-
-    @app.route('/api/battle', methods=['GET'])
-    def battle() -> Response:
+    @app.route('/api/clear-favorites', methods=['POST'])
+    def clear_favorites() -> Response:
         """
-        Route to initiate a battle between the two currently prepared meals.
-
-        Returns:
-            JSON response indicating the result of the battle and the winner.
-        Raises:
-            500 error if there is an issue during the battle.
-        """
-        try:
-            app.logger.info('Two meals enter, one meal leaves!')
-
-            winner = battle_model.battle()
-
-            return make_response(jsonify({'status': 'battle complete', 'winner': winner}), 200)
-        except Exception as e:
-            app.logger.error(f"Battle error: {e}")
-            return make_response(jsonify({'error': str(e)}), 500)
-
-    @app.route('/api/clear-combatants', methods=['POST'])
-    def clear_combatants() -> Response:
-        """
-        Route to clear the list of combatants for the battle.
+        Route to clear the list of favorites.
 
         Returns:
             JSON response indicating success of the operation.
         Raises:
-            500 error if there is an issue clearing combatants.
+            500 error if there is an issue clearing locations.
         """
         try:
-            app.logger.info('Clearing all combatants...')
-            battle_model.clear_combatants()
-            app.logger.info('Combatants cleared.')
-            return make_response(jsonify({'status': 'combatants cleared'}), 200)
+            app.logger.info('Clearing all favorites...')
+            favorites_model.clear_favorites()
+            app.logger.info('Favorites cleared.')
+            return make_response(jsonify({'status': 'favorites cleared'}), 200)
         except Exception as e:
-            app.logger.error("Failed to clear combatants: %s", str(e))
+            app.logger.error("Failed to clear favorites: %s", str(e))
             return make_response(jsonify({'error': str(e)}), 500)
 
-    @app.route('/api/get-combatants', methods=['GET'])
-    def get_combatants() -> Response:
+    @app.route('/api/get-all-favorites', methods=['GET'])
+    def get_all_favorites() -> Response:
         """
         Route to get the list of combatants for the battle.
 
@@ -412,78 +395,68 @@ def create_app(config_class=ProductionConfig):
         """
         try:
             app.logger.info('Getting combatants...')
-            combatants = battle_model.get_combatants()
-            return make_response(jsonify({'status': 'success', 'combatants': combatants}), 200)
+            combatants = favorites_model.get_all_favorites()
+            return make_response(jsonify({'status': 'success', 'favorites': combatants}), 200)
         except Exception as e:
-            app.logger.error("Failed to get combatants: %s", str(e))
+            app.logger.error("Failed to get favorites: %s", str(e))
             return make_response(jsonify({'error': str(e)}), 500)
 
-    @app.route('/api/prep-combatant', methods=['POST'])
-    def prep_combatant() -> Response:
+    @app.route('/api/add-location-to-favorites', methods=['POST'])
+    def add_location_to_favorites() -> Response:
         """
-        Route to prepare a prep a meal making it a combatant for a battle.
+        Route to add a location to the favorites by location key.
 
-        Parameters:
-            - meal (str): The name of the meal
+        Expected JSON Input:
+            - location (str): The location's name.
 
         Returns:
-            JSON response indicating the success of combatant preparation.
-        Raises:
-            500 error if there is an issue preparing combatants.
+            JSON response indicating success of the addition or error message.
         """
         try:
-            data = request.json
-            if not data or 'meal' not in data:
-                return make_response(jsonify({'error': 'Meal name is required'}), 400)
-            meal = data.get('meal')
-            app.logger.info("Preparing combatant: %s", meal)
+            data = request.get_json()
 
-            if not meal:
-                raise BadRequest('You must name a combatant')
+            location_name = data.get('location')
 
-            try:
-                meal = Meals.get_meal_by_name(meal)
-                battle_model.prep_combatant(meal)
-                combatants = battle_model.get_combatants()
-            except Exception as e:
-                app.logger.error("Failed to prepare combatant: %s", str(e))
-                return make_response(jsonify({'error': str(e)}), 500)
-            return make_response(jsonify({'status': 'combatant prepared', 'combatants': combatants}), 200)
+            if not location_name:
+                return make_response(jsonify({'error': 'Invalid input. Name of location is required.'}), 400)
+
+            # Lookup the song by compound key
+            location = Locations.get_location_by_name(location_name)
+
+            # Add song to playlist
+            favorites_model.add_location_to_favorites(location)
+
+            app.logger.info(f"Location added to favorites: {location}")
+            return make_response(jsonify({'status': 'success', 'message': 'Location added to playlist'}), 201)
 
         except Exception as e:
-            app.logger.error("Failed to prepare combatants: %s", str(e))
+            app.logger.error(f"Error adding location to playlist: {e}")
             return make_response(jsonify({'error': str(e)}), 500)
 
 
     ############################################################
     #
-    # Leaderboard
+    # Favorites Functions
     #
     ############################################################
 
 
-    @app.route('/api/leaderboard', methods=['GET'])
-    def get_leaderboard() -> Response:
+    @app.route('/api/get-weather-for-all-favorites', methods=['POST'])
+    def get_weather_for_all_favorites() -> Response:
         """
-        Route to get the leaderboard of meals sorted by wins, battles, or win percentage.
-
-        Query Parameters:
-            - sort (str): The field to sort by ('wins', 'battles', or 'win_pct'). Default is 'wins'.
+        Route to getting weather for all favorites.
 
         Returns:
-            JSON response with a sorted leaderboard of meals.
+            JSON response indicating success of the operation.
         Raises:
-            500 error if there is an issue generating the leaderboard.
+            500 error if there is an issue getting weather for all favorites.
         """
         try:
-            sort_by = request.args.get('sort', 'wins')  # Default sort by wins
-            app.logger.info("Generating leaderboard sorted by %s", sort_by)
-
-            leaderboard_data = Meals.get_leaderboard(sort_by)
-
-            return make_response(jsonify({'status': 'success', 'leaderboard': leaderboard_data}), 200)
+            app.logger.info('Getting weather for all favorites')
+            favorites_model.get_weather_for_all_favorites()
+            return make_response(jsonify({'status': 'success'}), 200)
         except Exception as e:
-            app.logger.error(f"Error generating leaderboard: {e}")
+            app.logger.error(f"Error getting weather for all favorites: {e}")
             return make_response(jsonify({'error': str(e)}), 500)
 
     return app
