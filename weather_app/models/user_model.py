@@ -18,7 +18,7 @@ class Users(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     salt = db.Column(db.String(32), nullable=False)  # 16-byte salt in hex
     password = db.Column(db.String(64), nullable=False)  # SHA-256 hash in hex
-    favorite_locations = db.Column(db.ARRAY(db.String(255)), nullable=True)
+    favorite_locations = db.Column(db.String(255), nullable=True)
 
     @classmethod
     def _generate_hashed_password(cls, password: str) -> tuple[str, str]:
@@ -164,12 +164,15 @@ class Users(db.Model):
             raise ValueError(f"User {username} not found")
 
         if user.favorite_locations is None:
-            user.favorite_locations = []
-
-        if location not in user.favorite_locations:
-            user.favorite_locations.append(location)
-            db.session.commit()
-            logger.info("Favorite location added successfully for user: %s", username)
+            user.favorite_locations = location
+        else:
+            locations = user.favorite_locations.split(",")
+            if location not in locations:
+                user.favorite_locations = user.favorite_locations + "," + location
+                db.session.commit()
+                logger.info(
+                    "Favorite location added successfully for user: %s", username
+                )
 
     @classmethod
     def remove_favorite_location(cls, username: str, location: str) -> None:
@@ -188,7 +191,12 @@ class Users(db.Model):
             logger.info("User %s not found", username)
             raise ValueError(f"User {username} not found")
 
-        if not user.favorite_locations or location not in user.favorite_locations:
+        if not user.favorite_locations:
+            logger.info("No favorite locations found for user: %s", username)
+            raise ValueError(f"No favorite locations found for user {username}")
+
+        locations = user.favorite_locations.split(",")
+        if location not in locations:
             logger.info(
                 "Favorite location %s not found for user: %s", location, username
             )
@@ -196,7 +204,8 @@ class Users(db.Model):
                 f"Favorite location {location} not found for user {username}"
             )
 
-        user.favorite_locations.remove(location)
+        locations.remove(location)
+        user.favorite_locations = ",".join(locations) if locations else None
         db.session.commit()
         logger.info("Favorite location removed successfully for user: %s", username)
 
@@ -218,4 +227,7 @@ class Users(db.Model):
         if not user:
             logger.info("User %s not found", username)
             raise ValueError(f"User {username} not found")
-        return user.favorite_locations
+
+        if not user.favorite_locations:
+            return ""
+        return user.favorite_locations.split(",")
