@@ -249,12 +249,6 @@ def test_update_location_deleted(session, mock_redis_client):
     with pytest.raises(ValueError, match="Location 1 not found"):
         Locations.update_location(location.id, current_temperature=28, current_wind_speed=14, current_rain=2)
 
-# def test_update_location_update_name(session):
-#     """Test updating a meal's name."""
-#     Locations.create_location("Boston", 42.3601, 71.0589, 34, 15, 0)
-#     meal = Meals.query.one()
-#     with pytest.raises(ValueError, match="Cannot update meal name"):
-#         Meals.update_meal(meal.id, meal="Lasagna", cuisine="Italian", price=15.0, difficulty="HIGH")
 
 def test_update_location_bad_id(session):
     """Test updating a location with an invalid ID."""
