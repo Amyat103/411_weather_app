@@ -18,7 +18,7 @@ class Users(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     salt = db.Column(db.String(32), nullable=False)  # 16-byte salt in hex
     password = db.Column(db.String(64), nullable=False)  # SHA-256 hash in hex
-    #favorite_locations = db.Column(db.ARRAY(db.String), nullable=True)
+    favorite_locations = db.Column(db.ARRAY(db.String(255)), nullable=True)
 
     @classmethod
     def _generate_hashed_password(cls, password: str) -> tuple[str, str]:
