@@ -49,7 +49,7 @@ class Locations(db.Model):
             ValueError: If location is already made
             IntegrityError: If there is a database error.
         """
-        # Create and commit the new meal
+        # Create and commit the new location
         new_location = cls(location=location, latitude=latitude, longitude=longitude, current_temperature=current_temperature, current_wind_speed=current_wind_speed, current_rain=current_rain)
         try:
             db.session.add(new_location)
@@ -108,7 +108,7 @@ class Locations(db.Model):
         if cached_location:
             logger.info("Location retrieved from cache: %s", location_id)
             location_data = {k.decode(): v.decode() for k, v in cached_location.items()}
-            # meal_data['deleted'] is a string. We need to convert it to a bool
+            # location_data['deleted'] is a string. We need to convert it to a bool
             location_data['deleted'] = location_data.get('deleted', 'false').lower() == 'true'
             if location_data['deleted']:
                 logger.info("Location with %s %s not found", "name" if location else "ID", location or location_id)
@@ -118,7 +118,7 @@ class Locations(db.Model):
         if not Locations or Locations.deleted:
             logger.info("Location with %s %s not found", "name" if location else "ID", location or location_id)
             raise ValueError(f"Location {location or location_id} not found")
-        # Convert the meal object to a dictionary and cache it
+        # Convert the location object to a dictionary and cache it
         logger.info("Location retrieved from database and cached: %s", location_id)
         location_dict = asdict(Locations)
         redis_client.hset(cache_key, mapping={k: str(v) for k, v in location_dict.items()})
@@ -191,12 +191,12 @@ class Locations(db.Model):
 
 def update_cache_for_location(mapper, connection, target):
     """
-    Update the Redis cache for a meal entry after an update or delete operation.
+    Update the Redis cache for a location entry after an update or delete operation.
 
     This function is intended to be used as an SQLAlchemy event listener for the
-    `after_update` and `after_delete` events on the Meals model. When a meal is
+    `after_update` and `after_delete` events on the Locations model. When a location is
     updated or deleted, this function will either update the corresponding Redis
-    cache entry with the new meal details or remove the entry if the meal has
+    cache entry with the new location details or remove the entry if the location has
     been marked as deleted.
 
     Args:
@@ -204,14 +204,14 @@ def update_cache_for_location(mapper, connection, target):
                          about the model being updated (automatically passed by SQLAlchemy).
         connection (Connection): The SQLAlchemy Connection object used for the
                                  database operation (automatically passed by SQLAlchemy).
-        target (Meals): The instance of the Meals model that was updated or deleted.
-                        The `target` object contains the updated meal data.
+        target (Locations): The instance of the Locations model that was updated or deleted.
+                        The `target` object contains the updated location data.
 
     Side-effects:
-        - If the meal is marked as deleted (`target.deleted` is True), the function
+        - If the location is marked as deleted (`target.deleted` is True), the function
           removes the corresponding cache entry from Redis.
-        - If the meal is not marked as deleted, the function updates the Redis cache
-          entry with the latest meal data using the `hset` command.
+        - If the location is not marked as deleted, the function updates the Redis cache
+          entry with the latest location data using the `hset` command.
     """
     cache_key = f"location:{target.id}"
     if target.deleted:
