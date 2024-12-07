@@ -459,7 +459,27 @@ def create_app(config_class=ProductionConfig):
             app.logger.error(f"Error getting weather for all favorites: {e}")
             return make_response(jsonify({'error': str(e)}), 500)
 
+    @app.route('/api/get-weather-for-favorite', methods=['POST'])
+    def get_weather_for_favorite() -> Response:
+        """
+        Route to getting weather for current favorite.
+
+        Returns:
+            JSON response indicating success of the operation.
+        Raises:
+            500 error if there is an issue getting weather for all favorites.
+        """
+        try:
+            app.logger.info('Getting weather for favorite')
+            favorites_model.get_weather_for_favorite()
+            return make_response(jsonify({'status': 'success'}), 200)
+        except Exception as e:
+            app.logger.error(f"Error getting weather for favorite: {e}")
+            return make_response(jsonify({'error': str(e)}), 500)
+
     return app
+
+
 
 
 if __name__ == '__main__':
