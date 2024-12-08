@@ -277,12 +277,12 @@ create_user
 login_user
 create_location
 clear_favorites
+get_location_by_name
+get_location_by_id
 add_location_to_favorites
 get_all_favorites
 get_weather_for_all_favorites
-logout_user
-get_location_by_name
-get_location_by_id
 delete_location_by_id
+logout_user
 
 echo "All tests passed successfully!"
