@@ -104,7 +104,7 @@ logout_user() {
 # Function to add a Location
 create_location() {
   echo "Adding a location..."
-  curl -s -X POST "$BASE_URL/create-location" -H "Content-Type: application/json" \
+  curl -s -X POST "http://localhost:5002/api.openweathermap.org/data/3.0/onecall?lat=42.3601&lon=71.0589&appid=97cb58db58fd4f4175584e4f11d69774" -H "Content-Type: application/json" \
     -d '{"location":"Boston", "latitude":42.3601, "longitude":71.0589}' | grep -q '"status": "location added"'
   if [ $? -eq 0 ]; then
     echo "Location added successfully."
@@ -113,6 +113,18 @@ create_location() {
     exit 1
   fi
 }
+# create_location() {
+#   echo "Fetching weather data for Boston..."
+#   curl -s -X GET "https://api.openweathermap.org/data/3.0/onecall?lat=42.3601&lon=71.0589&appid=97cb58db58fd4f4175584e4f11d69774" \
+#     -H "Content-Type: application/json" | grep -q '"current"'
+#   if [ $? -eq 0 ]; then
+#     echo "Successfully fetched weather data for Boston."
+#   else
+#     echo "Failed to fetch weather data."
+#     exit 1
+#   fi
+# }
+
 
 # Function to delete a location by ID (1)
 delete_location_by_id() {
