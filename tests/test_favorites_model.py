@@ -25,7 +25,7 @@ def sample_location1():
        longitude=71.0589,
        current_temperature=34,
        current_wind_speed=15,
-       current_rain=0
+       current_uvi=0
    )
 
 
@@ -38,7 +38,7 @@ def sample_location2():
        longitude=-74.0060,
        current_temperature=28,
        current_wind_speed=10,
-       current_rain=0
+       current_uvi=0
    )
 
 

@@ -29,6 +29,10 @@ def create_app(config_class=ProductionConfig):
     # Healthchecks
     #
     ####################################################
+    @app.route('/')
+    def index():
+        return "Hello, World!"
+
 
     @app.route("/api/health", methods=["GET"])
     def healthcheck() -> Response:
@@ -340,8 +344,10 @@ def create_app(config_class=ProductionConfig):
         try:
             # Get the API data from the request
             data1 = request.get_json()
+            location = data1.get('location')
             lat = data1.get('latitude')
             lon = data1.get('longitude')
+            
 
             if not lat or not lon:
                 return make_response(jsonify({'error': 'Missing required fields'}), 400)
@@ -353,20 +359,24 @@ def create_app(config_class=ProductionConfig):
             data = response.json()
 
             # Extract and validate required fields
-            location = data1.get('location')
+            
             latitude = lat
             longitude = lon
             current_temperature = data["current"]["temp"]
             current_wind_speed = data["current"]["wind_speed"]
-            current_rain = data["daily"]["rain"]
+            current_uvi = data["current"]["uvi"]
+            print(location)
+            print(current_temperature)
+            print(current_wind_speed)
+            print(current_uvi)
 
             if (
-                not location
-                or not latitude
-                or not longitude
-                or not current_temperature
-                or not current_wind_speed
-                or not current_rain
+                location is None
+                or latitude is None
+                or longitude is None
+                or current_temperature is None
+                or current_wind_speed is None
+                or current_uvi is None
             ):
                 raise BadRequest(
                     "Invalid input. All fields are required with valid values."
@@ -380,7 +390,7 @@ def create_app(config_class=ProductionConfig):
                 longitude,
                 current_temperature,
                 current_wind_speed,
-                current_rain,
+                current_uvi,
             )
             Locations.create_location(
                 location,
@@ -388,12 +398,12 @@ def create_app(config_class=ProductionConfig):
                 longitude,
                 current_temperature,
                 current_wind_speed,
-                current_rain,
+                current_uvi,
             )
 
             app.logger.info("Location added: %s", location)
             return make_response(
-                jsonify({"status": "location added", "location": location}), 201
+                jsonify({"status": "location added"}), 201
             )
         except Exception as e:
             app.logger.error("Failed to add location: %s", str(e))
@@ -583,14 +593,14 @@ def create_app(config_class=ProductionConfig):
             # Add song to playlist
             favorites_model.add_location_to_favorites(location)
 
-            app.logger.info(f"Location added to favorites: {location}")
+            app.logger.info(f"Location added to favorites: {location_name}")
             return make_response(
-                jsonify({"status": "success", "message": "Location added to playlist"}),
+                jsonify({"status": "success", "message": "Location added to favorites"}),
                 201,
             )
 
         except Exception as e:
-            app.logger.error(f"Error adding location to playlist: {e}")
+            app.logger.error(f"Error adding location to favorites: {e}")
             return make_response(jsonify({"error": str(e)}), 500)
 
     ############################################################

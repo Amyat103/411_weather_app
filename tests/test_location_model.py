@@ -25,7 +25,7 @@ def test_add_location(session):
     assert result.longitude == 71.0589
     assert result.current_temperature == 34
     assert result.current_wind_speed == 15
-    assert result.current_rain == 0
+    assert result.current_uvi == 0
 
 def test_add_location_duplicate_name(session):
     """Test adding a location with a duplicate name."""
@@ -76,7 +76,7 @@ def test_get_location_by_id_cache_hit(session, mock_redis_client):
         "longitude".encode(): "71.0589".encode(),
         "current_temperature".encode(): "34".encode(),
         "current_wind_speed".encode(): "15".encode(),
-        "current_rain".encode(): "0.0".encode(),
+        "current_uvi".encode(): "0.0".encode(),
         "deleted".encode(): "False".encode(),
     }
 
@@ -111,7 +111,7 @@ def test_get_location_by_id_cache_miss(session, mock_redis_client):
             "longitude": "71.0589",
             "current_temperature": "34.0",
             "current_wind_speed": "15.0",
-            "current_rain": "0.0",
+            "current_uvi": "0.0",
             "deleted": "False",
         }
     )
@@ -137,7 +137,7 @@ def test_get_location_by_id_deleted(session, mock_redis_client):
         "longitude".encode(): "71.0589".encode(),
         "current_temperature".encode(): "34".encode(),
         "current_wind_speed".encode(): "15".encode(),
-        "current_rain".encode(): "0.0".encode(),
+        "current_uvi".encode(): "0.0".encode(),
         "deleted".encode(): "True".encode(),  # Simulate the meal being marked as deleted
     }
 
@@ -189,7 +189,7 @@ def test_get_location_by_name_deleted(session, mock_redis_client):
         "longitude".encode(): "71.0589".encode(),
         "current_temperature".encode(): "34".encode(),
         "current_wind_speed".encode(): "15".encode(),
-        "current_rain".encode(): "0.0".encode(),
+        "current_uvi".encode(): "0.0".encode(),
         "deleted".encode(): "True".encode()
     }
 
@@ -211,11 +211,11 @@ def test_update_location(session, mock_redis_client):
     """Test updating a location's details."""
     Locations.create_location("Boston", 42.3601, 71.0589, 34, 15, 0)
     location = Locations.query.one()
-    Locations.update_location(location.id, current_temperature=28, current_wind_speed=14, current_rain=2)
+    Locations.update_location(location.id, current_temperature=28, current_wind_speed=14, current_uvi=2)
     updated_location = Locations.query.one()
     assert updated_location.current_temperature == 28
     assert updated_location.current_wind_speed == 14
-    assert updated_location.current_rain == 2
+    assert updated_location.current_uvi == 2
 
 def test_update_location_triggers_cache_update(session, mock_redis_client):
     """Test that updating a location triggers a cache update in Redis."""
@@ -236,7 +236,7 @@ def test_update_location_triggers_cache_update(session, mock_redis_client):
             b"longitude": b"71.0589",
             b"current_temperature": b"20",
             b"current_wind_speed": b"10",
-            b"current_rain": b"0.0",
+            b"current_uvi": b"0.0",
             b"deleted": b"False",
         }
     )
@@ -247,12 +247,12 @@ def test_update_location_deleted(session, mock_redis_client):
     location = Locations.query.one()
     Locations.delete_location(location.id)
     with pytest.raises(ValueError, match="Location 1 not found"):
-        Locations.update_location(location.id, current_temperature=28, current_wind_speed=14, current_rain=2)
+        Locations.update_location(location.id, current_temperature=28, current_wind_speed=14, current_uvi=2)
 
 
 def test_update_location_bad_id(session):
     """Test updating a location with an invalid ID."""
     with pytest.raises(ValueError, match="Location 999 not found"):
-        Locations.update_location(999, current_temperature=28, current_wind_speed=14, current_rain=2)
+        Locations.update_location(999, current_temperature=28, current_wind_speed=14, current_uvi=2)
 
 

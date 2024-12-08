@@ -43,8 +43,8 @@ check_health() {
 # Function to create a user
 create_user() {
   echo "Creating a new user..."
-  curl -s -X POST "$BASE_URL/create-user" -H "Content-Type: application/json" \
-    -d '{"username":"testuser", "password":"password123"}' | grep -q '"status": "user added"'
+  curl -s -X POST "$BASE_URL/create-account" -H "Content-Type: application/json" \
+    -d '{"username":"testuser", "password":"password123"}' | grep -q '"status": "201"'
   if [ $? -eq 0 ]; then
     echo "User created successfully."
   else
@@ -58,7 +58,7 @@ login_user() {
   echo "Logging in user..."
   response=$(curl -s -X POST "$BASE_URL/login" -H "Content-Type: application/json" \
     -d '{"username":"testuser", "password":"password123"}')
-  if echo "$response" | grep -q '"message": "User testuser logged in successfully."'; then
+  if echo "$response" | grep -q '"message": "Login successful"'; then
     echo "User logged in successfully."
     if [ "$ECHO_JSON" = true ]; then
       echo "Login Response JSON:"
@@ -102,22 +102,12 @@ logout_user() {
 ##############################################
 
 # Function to add a Location
-# create_location() {
-#   echo "Adding a location..."
-#   curl -s -X POST "http://localhost:5002/api.openweathermap.org/data/3.0/onecall?lat=42.3601&lon=71.0589&appid=97cb58db58fd4f4175584e4f11d69774" -H "Content-Type: application/json" \
-#     -d '{"location":"Boston", "latitude":42.3601, "longitude":71.0589}' | grep -q '"status": "location added"'
-#   if [ $? -eq 0 ]; then
-#     echo "Location added successfully."
-#   else
-#     echo "Failed to add location."
-#     exit 1
-#   fi
-# }
-# Function to add a Location
 create_location() {
   echo "Adding a location..."
-  curl -s -X POST "http://localhost:5002/api/create-location" -H "Content-Type: application/json" \
-    -d '{"location":"Boston", "latitude":42.3601, "longitude":71.0589}'
+  curl -s -X POST "$BASE_URL/create-location" -H "Content-Type: application/json" \
+    -d '{"location":"Boston", "latitude":42.3601, "longitude":71.0589}' | grep -q '"status": "location added"'
+  # echo $(curl -s -X POST "$BASE_URL/create-location" -H "Content-Type: application/json" \
+  #   -d '{"location":"Boston", "latitude":42.3601, "longitude":71.0589}')
   if [ $? -eq 0 ]; then
     echo "Location added successfully."
   else
@@ -125,18 +115,6 @@ create_location() {
     exit 1
   fi
 }
-
-# create_location() {
-#   echo "Fetching weather data for Boston..."
-#   curl -s -X GET "https://api.openweathermap.org/data/3.0/onecall?lat=42.3601&lon=71.0589&appid=97cb58db58fd4f4175584e4f11d69774" \
-#     -H "Content-Type: application/json" | grep -q '"current"'
-#   if [ $? -eq 0 ]; then
-#     echo "Successfully fetched weather data for Boston."
-#   else
-#     echo "Failed to fetch weather data."
-#     exit 1
-#   fi
-# }
 
 
 # Function to delete a location by ID (1)
@@ -227,7 +205,7 @@ get_all_favorites() {
 add_location_to_favorites() {
   echo "Adding a location to favorites..."
   curl -s -X POST "$BASE_URL/add-location-to-favorites" -H "Content-Type: application/json" \
-    -d '{"location":"Boston"}' | grep -q '"status": "Location added to favorites"'
+    -d '{"location":"Boston"}' | grep -q '"status": "success", "message": "Location added to favorites"'
   if [ $? -eq 0 ]; then
     echo "Location added to favorites successfully."
   else
@@ -299,7 +277,6 @@ create_user
 login_user
 create_location
 clear_favorites
-add_location_to_favorites
 add_location_to_favorites
 get_all_favorites
 get_weather_for_all_favorites

@@ -169,7 +169,7 @@ class FavoritesModel:
                 + "Longitude: " + location.longitude + "\n"
                 + "Current Temperature: " + location.current_temperature + "\n"
                 + "Current Wind Speed: " + location.current_wind_speed + "\n"
-                + "Current Rain: " + location.current_rain + "\n\n")
+                + "Current UVI: " + location.current_uvi + "\n\n")
     
     def get_weather_for_all_favorites(self) -> List[str]:
         weathers = []
@@ -414,7 +414,7 @@ class FavoritesModel:
                 + "Longitude: " + location.longitude + "\n"
                 + "Current Temperature: " + location.current_temperature + "\n"
                 + "Current Wind Speed: " + location.current_wind_speed + "\n"
-                + "Current Rain: " + location.current_rain + "\n\n")
+                + "Current UVI: " + location.current_uvi + "\n\n")
     
     def get_weather_for_all_favorites(self) -> List[str]:
         weathers = []

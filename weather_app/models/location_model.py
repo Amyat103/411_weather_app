@@ -24,7 +24,7 @@ class Locations(db.Model):
     longitude: float = db.Column(db.Float, nullable=False)
     current_temperature: float = db.Column(db.Float, nullable=False)
     current_wind_speed: float = db.Column(db.Float, nullable=False)
-    current_rain: float = db.Column(db.Float, nullable=False)
+    current_uvi: float = db.Column(db.Float, nullable=False)
     deleted: bool = db.Column(db.Boolean, default=False)
 
     def __post_init__(self):
@@ -32,7 +32,7 @@ class Locations(db.Model):
             raise ValueError("Wind speed must be a positive value.")
 
     @classmethod
-    def create_location(cls, location: str, latitude: float, longitude: float, current_temperature: float, current_wind_speed: float, current_rain: float) -> None:
+    def create_location(cls, location: str, latitude: float, longitude: float, current_temperature: float, current_wind_speed: float, current_uvi: float) -> None:
         """
         Create a new location in the database.
 
@@ -42,7 +42,7 @@ class Locations(db.Model):
             longitude (float): Longitude of the location, decimal (-180; 180)
             current_temperature (float): Temperature Fahrenheit
             current_wind_speed (float): Wind speed miles/hour
-            current_rain (float): Precipitation, mm/h
+            current_uvi (float): UVI
 
 
         Raises:
@@ -50,7 +50,7 @@ class Locations(db.Model):
             IntegrityError: If there is a database error.
         """
         # Create and commit the new location
-        new_location = cls(location=location, latitude=latitude, longitude=longitude, current_temperature=current_temperature, current_wind_speed=current_wind_speed, current_rain=current_rain)
+        new_location = cls(location=location, latitude=latitude, longitude=longitude, current_temperature=current_temperature, current_wind_speed=current_wind_speed, current_uvi=current_uvi)
         try:
             db.session.add(new_location)
             db.session.commit()
