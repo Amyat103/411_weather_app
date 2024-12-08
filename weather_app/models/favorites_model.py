@@ -32,7 +32,7 @@ class FavoritesModel:
         self.favorites: List[Locations] = []
 
     ##################################################
-    # Song Management Functions
+    # Location Management Functions
     ##################################################
 
     def add_location_to_favorites(self, location: Locations) -> None:
@@ -84,7 +84,7 @@ class FavoritesModel:
         Raises:
             ValueError: If the favorites is empty or the index is invalid.
         """
-        logger.info("Removing song at track number %d from playlist", index)
+        logger.info("Removing location %d from favorites", index)
         self.check_if_empty()
         index = self.validate_index(index)
         favorites_index = index - 1
@@ -114,7 +114,7 @@ class FavoritesModel:
 
     def get_location_by_location_id(self, location_id: int) -> Locations:
         """
-        Retrieves a song from the favorites by its location ID.
+        Retrieves a location from the favorites by its location ID.
 
         Args:
             location_id (int): The ID of the location to retrieve.
@@ -189,7 +189,7 @@ class FavoritesModel:
         Validates the given location ID, ensuring it is a non-negative integer.
 
         Args:
-            location_id (int): The song ID to validate.
+            location_id (int): The location ID to validate.
             check_in_favorites (bool, optional): If True, checks if the location ID exists in the favorites.
                                                 If False, skips the check. Defaults to True.
 
