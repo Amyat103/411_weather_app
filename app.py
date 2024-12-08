@@ -8,10 +8,7 @@ from weather_app.models.favorites_model import FavoritesModel
 from weather_app.models.location_model import Locations
 from weather_app.models.mongo_session_model import login_user, logout_user
 from weather_app.models.user_model import Users
-
-# from flask_cors import CORS
-
-
+import requests
 # Load environment variables from .env file
 load_dotenv()
 
@@ -342,16 +339,17 @@ def create_app(config_class=ProductionConfig):
         try:
             # Get the API data from the request
             data1 = request.get_json()
-            lat = data1.get("latitude")
-            lon = data1.get("longitude")
-
+            lat = data1.get('latitude')
+            lon = data1.get('longitude')
+            
             # Get data from OpenWeatherMap API
-            api_key = "97cb58db58fd4f4175584e4f11d69774"
-            url = f"https://api.openweathermap.org/data/3.0/onecall?lat={lat}lon={lon}&appid={api_key}"
-            data = request.get(url)
+            api_key = '05853877d8a45f4353e1be717814134d'
+            url = f'https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&appid={api_key}'
+            response = requests.get(url)
+            data = response.json()
 
             # Extract and validate required fields
-            location = lon = data1.get("location")
+            location = data1.get('location')
             latitude = lat
             longitude = lon
             current_temperature = data["current"]["temp"]
