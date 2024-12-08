@@ -77,7 +77,8 @@ def create_app(config_class=ProductionConfig):
                 return make_response(
                     jsonify(
                         {
-                            "error": "Invalid input, both username and password are required"
+                            "message": "Invalid input, both username and password are required",
+                            "status": "400",
                         }
                     ),
                     400,
@@ -89,11 +90,12 @@ def create_app(config_class=ProductionConfig):
 
             app.logger.info("User added: %s", username)
             return make_response(
-                jsonify({"status": "user added", "username": username}), 201
+                jsonify({"message": "Account created successfully", "status": "201"}),
+                201,
             )
         except Exception as e:
             app.logger.error("Failed to add user: %s", str(e))
-            return make_response(jsonify({"error": str(e)}), 500)
+            return make_response(jsonify({"message": str(e), "status": "500"}), 500)
 
     @app.route("/api/delete-user", methods=["DELETE"])
     def delete_user() -> Response:
@@ -154,8 +156,14 @@ def create_app(config_class=ProductionConfig):
         data = request.get_json()
         if not data or "username" not in data or "password" not in data:
             app.logger.error("Invalid request payload for login.")
-            raise BadRequest(
-                "Invalid request payload. 'username' and 'password' are required."
+            return make_response(
+                jsonify(
+                    {
+                        "message": "Invalid request payload. 'username' and 'password' are required.",
+                        "status": "400",
+                    }
+                ),
+                400,
             )
 
         username = data["username"]
@@ -165,7 +173,12 @@ def create_app(config_class=ProductionConfig):
             # Validate user credentials
             if not Users.check_password(username, password):
                 app.logger.warning("Login failed for username: %s", username)
-                raise Unauthorized("Invalid username or password.")
+                return make_response(
+                    jsonify(
+                        {"message": "Invalid username or password.", "status": "401"}
+                    ),
+                    401,
+                )
 
             # Get user ID
             user_id = Users.get_id_by_username(username)
@@ -174,13 +187,16 @@ def create_app(config_class=ProductionConfig):
             login_user(user_id, favorites_model)
 
             app.logger.info("User %s logged in successfully.", username)
-            return jsonify({"message": f"User {username} logged in successfully."}), 200
+            return make_response(
+                jsonify({"message": "Login successful", "status": "200"}), 200
+            )
 
-        except Unauthorized as e:
-            return jsonify({"error": str(e)}), 401
         except Exception as e:
             app.logger.error("Error during login for username %s: %s", username, str(e))
-            return jsonify({"error": "An unexpected error occurred."}), 500
+            return make_response(
+                jsonify({"message": "An unexpected error occurred.", "status": "500"}),
+                500,
+            )
 
     @app.route("/api/logout", methods=["POST"])
     def logout():
@@ -252,8 +268,14 @@ def create_app(config_class=ProductionConfig):
             or "new_password" not in data
         ):
             app.logger.error("Invalid request payload for password update")
-            raise BadRequest(
-                "Invalid request payload. 'username', 'current_password', and 'new_password' are required."
+            return make_response(
+                jsonify(
+                    {
+                        "message": "Invalid request payload. 'username', 'current_password', and 'new_password' are required.",
+                        "status": "400",
+                    }
+                ),
+                400,
             )
 
         username = data["username"]
@@ -265,15 +287,18 @@ def create_app(config_class=ProductionConfig):
                 app.logger.warning(
                     "Password update failed - invalid current password: %s", username
                 )
-                return jsonify({"error": "Current password is incorrect"}), 401
+                return make_response(
+                    jsonify(
+                        {"message": "Current password is incorrect", "status": "401"}
+                    ),
+                    401,
+                )
 
             Users.update_password(username, new_password)
 
             app.logger.info("Password updated successfully for user: %s", username)
-            return (
-                jsonify(
-                    {"message": f"Password updated successfully for user {username}"}
-                ),
+            return make_response(
+                jsonify({"message": "Password updated successfully", "status": "200"}),
                 200,
             )
 
@@ -286,7 +311,10 @@ def create_app(config_class=ProductionConfig):
             app.logger.error(
                 "Error during password update for username %s: %s", username, str(e)
             )
-            return jsonify({"error": "An unexpected error occurred."}), 500
+            return make_response(
+                jsonify({"message": "An unexpected error occurred.", "status": "500"}),
+                500,
+            )
 
     ##########################################################
     #
