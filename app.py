@@ -318,7 +318,7 @@ def create_app(config_class=ProductionConfig):
             lon = data1.get("longitude")
 
             # Get data from OpenWeatherMap API
-            api_key = ""
+            api_key = "97cb58db58fd4f4175584e4f11d69774"
             url = f"https://api.openweathermap.org/data/3.0/onecall?lat={lat}lon={lon}&appid={api_key}"
             data = request.get(url)
 
@@ -610,4 +610,4 @@ def create_app(config_class=ProductionConfig):
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5002)
