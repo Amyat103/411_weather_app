@@ -222,3 +222,22 @@ for their personal interests and needs.
   - Error Response Example:
     - Code: 500
     - Content: { "error": "Error message" }
+
+## Testing (Unit and Smoke)
+
+## Unit tests
+
+4 units tests
+
+- ### User Model
+  ![User Model](/data/unit_test_user.png)
+- ### Location Model
+  ![Location Model](/data/unit_test_location.png)
+- ### Favorites Model
+  ![Favorites Model](/data/unit_test_favorites.png)
+- ### MongoDB Session Model
+  ![MongoDB Session Model](/data/unit_test_mongo.png)
+
+## Smoke Test
+
+![Smoke Test](/data/smoke_test_res.png)
