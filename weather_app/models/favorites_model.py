@@ -164,6 +164,16 @@ class FavoritesModel:
     ##################################################
 
     def get_weather_for_location(self, location: Locations) -> str:
+        """
+    Retrieve a formatted string of weather details for a given location.
+
+    Args:
+        location (Locations): The location object containing weather details.
+
+    Returns:
+        str: A formatted string with the location's name, latitude, longitude, 
+             current temperature, wind speed, and UV index.
+    """
         return ("Location: " + location.location + "\n"
                 + "Latitude: " + location.latitude + "\n"
                 + "Longitude: " + location.longitude + "\n"
@@ -172,6 +182,7 @@ class FavoritesModel:
                 + "Current UVI: " + location.current_uvi + "\n\n")
     
     def get_weather_for_all_favorites(self) -> List[str]:
+        
         weathers = []
         for i in range(len(self.favorites)):
             weathers = weathers + self.get_weather_for_location(self.favorites[i])
@@ -412,18 +423,46 @@ class FavoritesModel:
     ##################################################
 
     def get_weather_for_location(self, location: Locations) -> list[any]:
+        """
+    Retrieve weather details for a given location.
+
+    Args:
+        location (Locations or dict): The location for which to retrieve weather information. 
+            If a dictionary is provided, it is converted into a Locations object.
+
+    Returns:
+        list[any]: A list containing the location name, latitude, longitude, 
+                   current temperature, wind speed, and UV index.
+    """
         if isinstance(location, dict):
             location = Locations(**location)
 
         return [location.location, location.latitude, location.longitude, location.current_temperature, location.current_wind_speed, location.current_uvi]
     
     def get_weather_for_all_favorites(self) -> List[any]:
+        """
+    Retrieve weather details for all favorite locations.
+
+    Iterates over the list of favorite locations and collects their weather details.
+
+    Returns:
+        list[any]: A list of weather details for all favorite locations.
+                   Each entry in the list corresponds to the result from 
+                   `get_weather_for_location`.
+    """
         weathers = []
         for i in range(len(self.favorites)):
             weathers = weathers + self.get_weather_for_location(self.favorites[i])
         return weathers
     
     def get_weather_for_favorite(self):
+        """
+    Retrieve weather details for the current favorite location.
+
+    Returns:
+        list[any]: Weather details for the current favorite location.
+                   The result is the same as `get_weather_for_location`.
+    """
         return self.get_weather_for_location(self.get_current_favorite())
 
     ##################################################
@@ -489,49 +528,3 @@ class FavoritesModel:
         if not self.favorites:
             logger.error("Favorites is empty")
             raise ValueError("Favorites is empty")
-        
-    # def get_UVIndex_for_location(self, location_id: int)-> Locations:
-    #     """
-    #     Retrieves the Uv_Index for a location from favorites.
-
-    #     Args:
-    #         location_id (int): The ID of the location to get UV_Index for.
-
-    #     Raises:
-    #         ValueError: If the favorites is empty or the location is not found.
-    #     """
-    #     self.check_if_empty()
-    #     location_id = self.validate_location_id(location_id)
-    #     logger.info("Getting UV_Index with id %d from favorites", location_id)
-    #     return next((Uv_Index for Uv_Index in self.favorites if location.id == location_id), None)
-    
-    # def get_Historical_for_location(self, location_id: int)-> Locations:
-    #     """
-    #     Retrieves the Histroical weather for a location from favorites.
-
-    #     Args:
-    #         location_id (int): The ID of the location to get Historical Weather for.
-
-    #     Raises:
-    #         ValueError: If the favorites is empty or the location is not found.
-    #     """
-    #     self.check_if_empty()
-    #     location_id = self.validate_location_id(location_id)
-    #     logger.info("Getting UV_Index with id %d from favorites", location_id)
-    #     return ("Location: " + location.location + "\n"
-    #             + "Latitude: " + location.latitude + "\n")
-    
-    # def get_forecast_for_location(self, location_id: int)-> Locations:
-    #     """
-    #     Retrieves the Forecast for a location from favorites.
-
-    #     Args:
-    #         location_id (int): The ID of the location to get forecast Weather for.
-
-    #     Raises:
-    #         ValueError: If the favorites is empty or the location is not found.
-    #     """
-    #     self.check_if_empty()
-    #     location_id = self.validate_location_id(location_id)
-    #     logger.info("Getting UV_Index with id %d from favorites", location_id)
-    #     return next((location for location in self.favorites if location.id == location_id), None)
