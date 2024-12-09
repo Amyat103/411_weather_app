@@ -1,3 +1,7 @@
+# from flask_cors import CORS
+import os
+
+import requests
 from dotenv import load_dotenv
 from flask import Flask, Response, jsonify, make_response, request
 from werkzeug.exceptions import BadRequest, Unauthorized
@@ -8,8 +12,7 @@ from weather_app.models.favorites_model import FavoritesModel
 from weather_app.models.location_model import Locations
 from weather_app.models.mongo_session_model import login_user, logout_user
 from weather_app.models.user_model import Users
-# from flask_cors import CORS
-import requests
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -29,10 +32,9 @@ def create_app(config_class=ProductionConfig):
     # Healthchecks
     #
     ####################################################
-    @app.route('/')
+    @app.route("/")
     def index():
         return "Hello, World!"
-
 
     @app.route("/api/health", methods=["GET"])
     def healthcheck() -> Response:
@@ -344,22 +346,21 @@ def create_app(config_class=ProductionConfig):
         try:
             # Get the API data from the request
             data1 = request.get_json()
-            location = data1.get('location')
-            lat = data1.get('latitude')
-            lon = data1.get('longitude')
-            
+            location = data1.get("location")
+            lat = data1.get("latitude")
+            lon = data1.get("longitude")
 
             if not lat or not lon:
-                return make_response(jsonify({'error': 'Missing required fields'}), 400)
-            
+                return make_response(jsonify({"error": "Missing required fields"}), 400)
+
             # Get data from OpenWeatherMap API
-            api_key = '05853877d8a45f4353e1be717814134d'
-            url = f'https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&appid={api_key}'
+            api_key = os.getenv("API_KEY")
+            url = f"https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&appid={api_key}"
             response = requests.get(url)
             data = response.json()
 
             # Extract and validate required fields
-            
+
             latitude = lat
             longitude = lon
             current_temperature = data["current"]["temp"]
@@ -402,9 +403,7 @@ def create_app(config_class=ProductionConfig):
             )
 
             app.logger.info("Location added: %s", location)
-            return make_response(
-                jsonify({"status": "location added"}), 201
-            )
+            return make_response(jsonify({"status": "location added"}), 201)
         except Exception as e:
             app.logger.error("Failed to add location: %s", str(e))
             return make_response(jsonify({"error": str(e)}), 500)
@@ -595,7 +594,9 @@ def create_app(config_class=ProductionConfig):
 
             app.logger.info(f"Location added to favorites: {location_name}")
             return make_response(
-                jsonify({"status": "success", "message": "Location added to favorites"}),
+                jsonify(
+                    {"status": "success", "message": "Location added to favorites"}
+                ),
                 201,
             )
 
