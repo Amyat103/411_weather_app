@@ -30,6 +30,18 @@ class Locations(db.Model):
     def __post_init__(self):
         if self.current_wind_speed < 0:
             raise ValueError("Wind speed must be a positive value.")
+       
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "location": self.location,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
+            "current_temperature": self.current_temperature,
+            "current_wind_speed": self.current_wind_speed,
+            "current_uvi": self.current_uvi,
+            "deleted": self.deleted
+        }
 
     @classmethod
     def create_location(cls, location: str, latitude: float, longitude: float, current_temperature: float, current_wind_speed: float, current_uvi: float) -> None:

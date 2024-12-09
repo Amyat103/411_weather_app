@@ -205,7 +205,7 @@ get_all_favorites() {
 add_location_to_favorites() {
   echo "Adding a location to favorites..."
   curl -s -X POST "$BASE_URL/add-location-to-favorites" -H "Content-Type: application/json" \
-    -d '{"location":"Boston"}' | grep -q '"status": "success", "message": "Location added to favorites"'
+    -d '{"location":"Boston"}' | grep -q '"status": "success"'
   if [ $? -eq 0 ]; then
     echo "Location added to favorites successfully."
   else

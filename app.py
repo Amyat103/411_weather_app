@@ -550,16 +550,16 @@ def create_app(config_class=ProductionConfig):
     @app.route("/api/get-all-favorites", methods=["GET"])
     def get_all_favorites() -> Response:
         """
-        Route to get the list of combatants for the battle.
+        Route to get the list of favorite locations.
 
         Returns:
-            JSON response with the list of combatants.
+            JSON response with the list of favorites.
         """
         try:
-            app.logger.info("Getting combatants...")
-            combatants = favorites_model.get_all_favorites()
+            app.logger.info("Getting favorites...")
+            favorites = favorites_model.get_all_favorites()
             return make_response(
-                jsonify({"status": "success", "favorites": combatants}), 200
+                jsonify({"status": "success", "favorites": favorites}), 200
             )
         except Exception as e:
             app.logger.error("Failed to get favorites: %s", str(e))
@@ -609,7 +609,7 @@ def create_app(config_class=ProductionConfig):
     #
     ############################################################
 
-    @app.route("/api/get-weather-for-all-favorites", methods=["POST"])
+    @app.route("/api/get-weather-for-all-favorites", methods=["GET"])
     def get_weather_for_all_favorites() -> Response:
         """
         Route to getting weather for all favorites.
@@ -627,7 +627,7 @@ def create_app(config_class=ProductionConfig):
             app.logger.error(f"Error getting weather for all favorites: {e}")
             return make_response(jsonify({"error": str(e)}), 500)
 
-    @app.route("/api/get-weather-for-favorite", methods=["POST"])
+    @app.route("/api/get-weather-for-favorite", methods=["GET"])
     def get_weather_for_favorite() -> Response:
         """
         Route to getting weather for current favorite.

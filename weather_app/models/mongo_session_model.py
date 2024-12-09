@@ -60,7 +60,9 @@ def logout_user(user_id: int, favorite_model) -> None:
         ValueError: If no session document is found for the user in MongoDB.
     """
     logger.info("Attempting to log out user with ID %d.", user_id)
-    favorites_data = favorite_model.get_all_favorites()
+    # favorites_data = favorite_model.get_all_favorites()
+    favs = favorite_model.get_all_favorites()
+    favorites_data = [favorite.to_dict() for favorite in favs]
     logger.debug("Current favorites for user ID %d: %s", user_id, favorites_data)
 
     result = sessions_collection.update_one(

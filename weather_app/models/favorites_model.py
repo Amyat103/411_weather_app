@@ -292,6 +292,9 @@ class FavoritesModel:
             ValueError: If a location with the same 'id' already exists.
         """
         logger.info("Adding new location to favorites")
+        if isinstance(location, dict):
+            location = Locations(**location)
+
         if not isinstance(location, Locations):
             logger.error("Location is not a valid location")
             raise TypeError("Location is not a valid location")
@@ -408,15 +411,13 @@ class FavoritesModel:
     # Favorites Weather Functions
     ##################################################
 
-    def get_weather_for_location(self, location: Locations) -> str:
-        return ("Location: " + location.location + "\n"
-                + "Latitude: " + location.latitude + "\n"
-                + "Longitude: " + location.longitude + "\n"
-                + "Current Temperature: " + location.current_temperature + "\n"
-                + "Current Wind Speed: " + location.current_wind_speed + "\n"
-                + "Current UVI: " + location.current_uvi + "\n\n")
+    def get_weather_for_location(self, location: Locations) -> list[any]:
+        if isinstance(location, dict):
+            location = Locations(**location)
+
+        return [location.location, location.latitude, location.longitude, location.current_temperature, location.current_wind_speed, location.current_uvi]
     
-    def get_weather_for_all_favorites(self) -> List[str]:
+    def get_weather_for_all_favorites(self) -> List[any]:
         weathers = []
         for i in range(len(self.favorites)):
             weathers = weathers + self.get_weather_for_location(self.favorites[i])
@@ -489,48 +490,48 @@ class FavoritesModel:
             logger.error("Favorites is empty")
             raise ValueError("Favorites is empty")
         
-    def get_UVIndex_for_location(self, location_id: int)-> Locations:
-        """
-        Retrieves the Uv_Index for a location from favorites.
+    # def get_UVIndex_for_location(self, location_id: int)-> Locations:
+    #     """
+    #     Retrieves the Uv_Index for a location from favorites.
 
-        Args:
-            location_id (int): The ID of the location to get UV_Index for.
+    #     Args:
+    #         location_id (int): The ID of the location to get UV_Index for.
 
-        Raises:
-            ValueError: If the favorites is empty or the location is not found.
-        """
-        self.check_if_empty()
-        location_id = self.validate_location_id(location_id)
-        logger.info("Getting UV_Index with id %d from favorites", location_id)
-        return next((Uv_Index for Uv_Index in self.favorites if location.id == location_id), None)
+    #     Raises:
+    #         ValueError: If the favorites is empty or the location is not found.
+    #     """
+    #     self.check_if_empty()
+    #     location_id = self.validate_location_id(location_id)
+    #     logger.info("Getting UV_Index with id %d from favorites", location_id)
+    #     return next((Uv_Index for Uv_Index in self.favorites if location.id == location_id), None)
     
-    def get_Historical_for_location(self, location_id: int)-> Locations:
-        """
-        Retrieves the Histroical weather for a location from favorites.
+    # def get_Historical_for_location(self, location_id: int)-> Locations:
+    #     """
+    #     Retrieves the Histroical weather for a location from favorites.
 
-        Args:
-            location_id (int): The ID of the location to get Historical Weather for.
+    #     Args:
+    #         location_id (int): The ID of the location to get Historical Weather for.
 
-        Raises:
-            ValueError: If the favorites is empty or the location is not found.
-        """
-        self.check_if_empty()
-        location_id = self.validate_location_id(location_id)
-        logger.info("Getting UV_Index with id %d from favorites", location_id)
-        return ("Location: " + location.location + "\n"
-                + "Latitude: " + location.latitude + "\n")
+    #     Raises:
+    #         ValueError: If the favorites is empty or the location is not found.
+    #     """
+    #     self.check_if_empty()
+    #     location_id = self.validate_location_id(location_id)
+    #     logger.info("Getting UV_Index with id %d from favorites", location_id)
+    #     return ("Location: " + location.location + "\n"
+    #             + "Latitude: " + location.latitude + "\n")
     
-    def get_forecast_for_location(self, location_id: int)-> Locations:
-        """
-        Retrieves the Forecast for a location from favorites.
+    # def get_forecast_for_location(self, location_id: int)-> Locations:
+    #     """
+    #     Retrieves the Forecast for a location from favorites.
 
-        Args:
-            location_id (int): The ID of the location to get forecast Weather for.
+    #     Args:
+    #         location_id (int): The ID of the location to get forecast Weather for.
 
-        Raises:
-            ValueError: If the favorites is empty or the location is not found.
-        """
-        self.check_if_empty()
-        location_id = self.validate_location_id(location_id)
-        logger.info("Getting UV_Index with id %d from favorites", location_id)
-        return next((location for location in self.favorites if location.id == location_id), None)
+    #     Raises:
+    #         ValueError: If the favorites is empty or the location is not found.
+    #     """
+    #     self.check_if_empty()
+    #     location_id = self.validate_location_id(location_id)
+    #     logger.info("Getting UV_Index with id %d from favorites", location_id)
+    #     return next((location for location in self.favorites if location.id == location_id), None)
