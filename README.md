@@ -9,9 +9,10 @@ information for those locations, and the application stores everything
 in a database. Because of this, users can easily get weather information
 for their personal interests and needs.
 
-### Weather API
+### Running the app and Weather API
 
-This app uses Open Weather Map's API to run it add it in env
+- Run the docker script
+- Get API key form Open Weather App's API and add it to environment file
 
 ## Routes
 
