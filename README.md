@@ -9,6 +9,10 @@ information for those locations, and the application stores everything
 in a database. Because of this, users can easily get weather information
 for their personal interests and needs.
 
+### Weather API
+
+This app uses Open Weather Map's API to run it add it in env
+
 ## Routes
 
 #### Route: `/create-account`
